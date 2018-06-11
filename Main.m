@@ -2064,24 +2064,3 @@ switch choice
   case 'No'
     % no action
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function Sph1_min_Callback(hObject, eventdata, handles)
-% hObject    handle to Sph1_min (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of Sph1_min as text
-%        str2double(get(hObject,'String')) returns contents of Sph1_min as a double
