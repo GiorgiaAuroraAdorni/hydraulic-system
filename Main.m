@@ -41,7 +41,7 @@ function varargout = Main(varargin)
 
 % Edit the above text to modify the response to help Main
 
-% Last Modified by GUIDE v2.5 29-Nov-2016 14:51:36
+% Last Modified by GUIDE v2.5 11-Jun-2018 14:39:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -81,9 +81,9 @@ def =[
       1        % IngressoTipo
       1        % IngressoPar
       1        % Uscita
-      0        % Phii_min   (4)
-      5        % Phii, Phii_cur
-      10       % Phii_max
+      0        % Sph1_min   (4)
+      5        % Sph1, Sph1_cur
+      10       % Sph1_max
       0        % A1_min
       2        % A1, A1_cur
       10       % A1_max
@@ -108,12 +108,12 @@ def =[
       ];
     
 % Par degli slider
-global Phiisld A1sld A2sld rhosld R1sld R2sld h10sld h20sld;
+global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld;
 
-Phiisld.stmin = 0.1;
-Phiisld.stmax = 1;
-Phiisld.Llim = -Inf;
-Phiisld.Hlim = +Inf;
+Sph1sld.stmin = 0.1;
+Sph1sld.stmax = 1;
+Sph1sld.Llim = eps;
+Sph1sld.Hlim = +Inf;
 
 A1sld.stmin = 0.1;
 A1sld.stmax = 1;
