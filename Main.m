@@ -230,7 +230,7 @@ bdclose(Uscita);
 Uscita = 'SistemaIdraulico';
 
 % Carico i valori dei parametri dal Workspace
-ampiezza = evalin('base', 'input_params(''Ampiezza [m^3/s]'')');
+ampiezza = evalin('base', 'input_params(''Ampiezza [m]'')');
 if get(handles.IngressoTipo, 'Value') == 3
     frequenza = evalin('base', 'input_params(''Frequenza [Hz]'')');
 else
@@ -246,7 +246,7 @@ if dutycycle == 100, dutycycle = 100-0.0001; end
 
 
 % Leggo i dati inseriti dall'utente
-Phii  = ampiezza(2);
+Sph1  = ampiezza(2);
 A1   = get(handles.A1, 'Value');
 A2   = get(handles.A2, 'Value');
 rho = get(handles.rho, 'Value');
@@ -259,7 +259,7 @@ g = 9.8;
 
 % Esporta tutte le variabili nel Workspace per permettere a1 Simulink
 % di averne visibilità
-vars = {'A1', A1; 'A2', A2; 'rho', rho; 'R1', R1; 'Phii', Phii; 'R2', R2; 'h10', h10; 'h20', h20};
+vars = {'A1', A1; 'A2', A2; 'rho', rho; 'R1', R1; 'Sph1', Sph1; 'R2', R2; 'h10', h10; 'h20', h20};
 for i = 1:size(vars, 1)
     name = vars(i, 1);
     value = vars(i, 2);
@@ -1119,7 +1119,7 @@ set(handles.ConfigSaveName, 'String', name);
 id_ingresso = get(hObject, 'Value');
 
 new_String = cell(1);
-new_String{1} = 'Ampiezza [m^3/s]';
+new_String{1} = 'Ampiezza [m]';
 
 
 switch id_ingresso
@@ -1156,15 +1156,15 @@ parametri = get(handles.IngressoPar, 'String');
 param_name = parametri{get(handles.IngressoPar, 'Value')};
 values = evalin('base', ['input_params(''' param_name ''')']);
 
-set(handles.Phii_min, 'Value',  values(1));
-set(handles.Phii_min, 'String', num2str(values(1), '%.1f'));
-set(handles.Phii_cur, 'Value',  values(2));
-set(handles.Phii_cur, 'String', num2str(values(2), '%.1f'));
-set(handles.Phii_max, 'Value',  values(3));
-set(handles.Phii_max, 'String', num2str(values(3), '%.1f'));
-set(handles.Phii, 'Min',   values(1));
-set(handles.Phii, 'Value', values(2));
-set(handles.Phii, 'Max',   values(3));
+set(handles.Sph1_min, 'Value',  values(1));
+set(handles.Sph1_min, 'String', num2str(values(1), '%.1f'));
+set(handles.Sph1_cur, 'Value',  values(2));
+set(handles.Sph1_cur, 'String', num2str(values(2), '%.1f'));
+set(handles.Sph1_max, 'Value',  values(3));
+set(handles.Sph1_max, 'String', num2str(values(3), '%.1f'));
+set(handles.Sph1, 'Min',   values(1));
+set(handles.Sph1, 'Value', values(2));
+set(handles.Sph1, 'Max',   values(3));
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1200,15 +1200,15 @@ parametri = get(handles.IngressoPar, 'String');
 param_name = parametri{get(handles.IngressoPar, 'Value')};
 values = evalin('base', ['input_params(''' param_name ''')']);
 
-set(handles.Phii_min, 'Value',  values(1));
-set(handles.Phii_min, 'String', num2str(values(1), '%.1f'));
-set(handles.Phii_cur, 'Value',  values(2));
-set(handles.Phii_cur, 'String', num2str(values(2), '%.1f'));
-set(handles.Phii_max, 'Value',  values(3));
-set(handles.Phii_max, 'String', num2str(values(3), '%.1f'));
-set(handles.Phii, 'Min',   values(1));
-set(handles.Phii, 'Max',   values(3));
-set(handles.Phii, 'Value', values(2));
+set(handles.Sph1_min, 'Value',  values(1));
+set(handles.Sph1_min, 'String', num2str(values(1), '%.1f'));
+set(handles.Sph1_cur, 'Value',  values(2));
+set(handles.Sph1_cur, 'String', num2str(values(2), '%.1f'));
+set(handles.Sph1_max, 'Value',  values(3));
+set(handles.Sph1_max, 'String', num2str(values(3), '%.1f'));
+set(handles.Sph1, 'Min',   values(1));
+set(handles.Sph1, 'Max',   values(3));
+set(handles.Sph1, 'Value', values(2));
 
 
 
@@ -1227,13 +1227,13 @@ end
 
 %%
 % --- Executes on slider movement.
-function Phii_Callback(hObject, eventdata, handles)
-% hObject    handle to Phii (see GCBO)
+function Sph1_Callback(hObject, eventdata, handles)
+% hObject    handle to Sph1 (see GCBO)
 % eventdata  reserved - to be defined in a1 future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-Slider_sld_Callback(handles, handles.Phii, handles.Phii_cur);
+Slider_sld_Callback(handles, handles.Sph1, handles.Sph1_cur);
 
-val = get(handles.Phii, 'Value');
+val = get(handles.Sph1, 'Value');
 parametri = get(handles.IngressoPar, 'String');
 param_name = parametri{get(handles.IngressoPar, 'Value')};
 values = evalin('base', ['input_params(''' param_name ''')']);
@@ -1247,8 +1247,8 @@ evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
 
 
 % --- Executes during object creation, after setting all properties.
-function Phii_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Phii (see GCBO)
+function Sph1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Sph1 (see GCBO)
 % eventdata  reserved - to be defined in a1 future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1259,25 +1259,25 @@ end
 
 
 %%
-function Phii_max_Callback(hObject, eventdata, handles)
-% hObject    handle to Phii_max (see GCBO)
+function Sph1_max_Callback(hObject, eventdata, handles)
+% hObject    handle to Sph1_max (see GCBO)
 % eventdata  reserved - to be defined in a1 future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Phiisld;
-Slider_max_Callback(handles, handles.Phii, handles.Phii_min, handles.Phii_cur, handles.Phii_max, Phiisld.stmin, Phiisld.stmax, Phiisld.Llim, Phiisld.Hlim);
+global Sph1sld;
+Slider_max_Callback(handles, handles.Sph1, handles.Sph1_min, handles.Sph1_cur, handles.Sph1_max, Sph1sld.stmin, Sph1sld.stmax, Sph1sld.Llim, Sph1sld.Hlim);
 
 parametri = get(handles.IngressoPar, 'String');
 param_name = parametri{get(handles.IngressoPar, 'Value')};
-values = [get(handles.Phii, 'Min') get(handles.Phii, 'Value'), get(handles.Phii, 'Max')];
+values = [get(handles.Sph1, 'Min') get(handles.Sph1, 'Value'), get(handles.Sph1, 'Max')];
 evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
 
-% Hints: get(hObject,'String') returns contents of Phii_max as text
-%        str2double(get(hObject,'String')) returns contents of Phii_max as a1 double
+% Hints: get(hObject,'String') returns contents of Sph1_max as text
+%        str2double(get(hObject,'String')) returns contents of Sph1_max as a1 double
 
 
 % --- Executes during object creation, after setting all properties.
-function Phii_max_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Phii_max (see GCBO)
+function Sph1_max_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Sph1_max (see GCBO)
 % eventdata  reserved - to be defined in a1 future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1288,24 +1288,24 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function Phii_min_Callback(hObject, eventdata, handles)
-% hObject    handle to Phii_min (see GCBO)
+function Sph1_min_Callback(hObject, eventdata, handles)
+% hObject    handle to Sph1_min (see GCBO)
 % eventdata  reserved - to be defined in a1 future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Phiisld;
-Slider_min_Callback(handles, handles.Phii, handles.Phii_min, handles.Phii_cur, handles.Phii_max, Phiisld.stmin, Phiisld.stmax, Phiisld.Llim, Phiisld.Hlim);
+global Sph1sld;
+Slider_min_Callback(handles, handles.Sph1, handles.Sph1_min, handles.Sph1_cur, handles.Sph1_max, Sph1sld.stmin, Sph1sld.stmax, Sph1sld.Llim, Sph1sld.Hlim);
 
 parametri = get(handles.IngressoPar, 'String');
 param_name = parametri{get(handles.IngressoPar, 'Value')};
-values = [get(handles.Phii, 'Min') get(handles.Phii, 'Value'), get(handles.Phii, 'Max')];
+values = [get(handles.Sph1, 'Min') get(handles.Sph1, 'Value'), get(handles.Sph1, 'Max')];
 evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
-% Hints: get(hObject,'String') returns contents of Phii_min as text
-%        str2double(get(hObject,'String')) returns contents of Phii_min as a1 double
+% Hints: get(hObject,'String') returns contents of Sph1_min as text
+%        str2double(get(hObject,'String')) returns contents of Sph1_min as a1 double
 
 
 % --- Executes during object creation, after setting all properties.
-function Phii_min_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Phii_min (see GCBO)
+function Sph1_min_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Sph1_min (see GCBO)
 % eventdata  reserved - to be defined in a1 future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1317,25 +1317,25 @@ end
 
 
 %%
-function Phii_cur_Callback(hObject, eventdata, handles)
-% hObject    handle to Phii_cur (see GCBO)
+function Sph1_cur_Callback(hObject, eventdata, handles)
+% hObject    handle to Sph1_cur (see GCBO)
 % eventdata  reserved - to be defined in a1 future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Phiisld;
-Slider_cur_Callback(handles, handles.Phii, handles.Phii_min, handles.Phii_cur, handles.Phii_max, Phiisld.stmin, Phiisld.stmax, Phiisld.Llim, Phiisld.Hlim);
+global Sph1sld;
+Slider_cur_Callback(handles, handles.Sph1, handles.Sph1_min, handles.Sph1_cur, handles.Sph1_max, Sph1sld.stmin, Sph1sld.stmax, Sph1sld.Llim, Sph1sld.Hlim);
 
 
 parametri = get(handles.IngressoPar, 'String');
 param_name = parametri{get(handles.IngressoPar, 'Value')}; 
-values = [get(handles.Phii, 'Min') get(handles.Phii, 'Value'), get(handles.Phii, 'Max')];
+values = [get(handles.Sph1, 'Min') get(handles.Sph1, 'Value'), get(handles.Sph1, 'Max')];
 evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
-% Hints: get(hObject,'String') returns contents of Phii_cur as text
-%        str2double(get(hObject,'String')) returns contents of Phii_cur as a1 double
+% Hints: get(hObject,'String') returns contents of Sph1_cur as text
+%        str2double(get(hObject,'String')) returns contents of Sph1_cur as a1 double
 
 
 % --- Executes during object creation, after setting all properties.
-function Phii_cur_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Phii_cur (see GCBO)
+function Sph1_cur_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Sph1_cur (see GCBO)
 % eventdata  reserved - to be defined in a1 future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1351,12 +1351,12 @@ end
 function Load_Defaults(handles)
 
 global def;
-global Phiisld A1sld A2sld rhosld R1sld R2sld h10sld h20sld;
+global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld;
 
 
 % ingressi
 IngressoParstr = cell(1);
-IngressoParstr{1} = 'Ampiezza [m^3/s]';
+IngressoParstr{1} = 'Ampiezza [m]';
 IngressoParval = get(handles.IngressoPar, 'Value');
 set(handles.IngressoPar, 'Enable', 'on');
 
@@ -1384,23 +1384,23 @@ set(handles.IngressoPar, 'Value', def(2));
 set(handles.Uscita, 'Value', def(3)); 
 
 
-% slider Phii
-set(handles.Phii_min, 'Value', def(4));
-set(handles.Phii_min, 'String', num2str(def(4),  '%.1f')); 
-set(handles.Phii_cur, 'Value', def(5));
-set(handles.Phii_cur, 'String', num2str(def(5), '%.2f')); 
-set(handles.Phii_max, 'Value', def(6));
-set(handles.Phii_max, 'String', num2str(def(6), '%.1f'));
+% slider Sph1
+set(handles.Sph1_min, 'Value', def(4));
+set(handles.Sph1_min, 'String', num2str(def(4),  '%.1f')); 
+set(handles.Sph1_cur, 'Value', def(5));
+set(handles.Sph1_cur, 'String', num2str(def(5), '%.2f')); 
+set(handles.Sph1_max, 'Value', def(6));
+set(handles.Sph1_max, 'String', num2str(def(6), '%.1f'));
 
-set(handles.Phii, 'Min',   def(4)); 
-set(handles.Phii, 'Value', def(5));
-set(handles.Phii, 'Max',   def(6)); 
-majorstep = Phiisld.stmax / (def(6)-def(4));
-minorstep = Phiisld.stmin / (def(6)-def(4));
-set(handles.Phii, 'SliderStep', [minorstep majorstep]);
+set(handles.Sph1, 'Min',   def(4)); 
+set(handles.Sph1, 'Value', def(5));
+set(handles.Sph1, 'Max',   def(6)); 
+majorstep = Sph1sld.stmax / (def(6)-def(4));
+minorstep = Sph1sld.stmin / (def(6)-def(4));
+set(handles.Sph1, 'SliderStep', [minorstep majorstep]);
 
-vect = mat2str([get(handles.Phii, 'Min') get(handles.Phii, 'Value') get(handles.Phii, 'Max')]);
-evalin('base', ['input_params(''Ampiezza [m^3/s]'') = ' vect ';']);
+vect = mat2str([get(handles.Sph1, 'Min') get(handles.Sph1, 'Value') get(handles.Sph1, 'Max')]);
+evalin('base', ['input_params(''Ampiezza [m]'') = ' vect ';']);
 evalin('base', 'input_params(''Frequenza [Hz]'') = [0 100 10000];'); % Frequenza dei segnali periodici tranne il treno di impulsi
 evalin('base', 'input_params(''Frequenza [Hz]'') = [0 100 500];');   % Frequenza del treno di impulsi
 evalin('base', 'input_params(''Duty Cycle [%]'') = [0 50 100];');
@@ -1542,31 +1542,31 @@ function Punto_eq_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 clc
 
-ampiezza = evalin('base', 'input_params(''Ampiezza [m^3/s]'')');
+ampiezza = evalin('base', 'input_params(''Ampiezza [m]'')');
 
 set(handles.IngressoTipo,'Value',1);
 set(handles.IngressoPar, 'Value', 1);
 set(handles.IngressoPar, 'Enable', 'off');
 
-set(handles.Phii_min, 'Value',  ampiezza(1));
-set(handles.Phii_min, 'String', num2str(ampiezza(1), '%.1f'));
-set(handles.Phii_cur, 'Value',  ampiezza(2));
-set(handles.Phii_cur, 'String', num2str(ampiezza(2), '%.2f'));
-set(handles.Phii_max, 'Value',  ampiezza(3));
-set(handles.Phii_max, 'String', num2str(ampiezza(3), '%.1f'));
-set(handles.Phii, 'Min',   ampiezza(1));
-set(handles.Phii, 'Value', ampiezza(2));
-set(handles.Phii, 'Max',   ampiezza(3));
+set(handles.Sph1_min, 'Value',  ampiezza(1));
+set(handles.Sph1_min, 'String', num2str(ampiezza(1), '%.1f'));
+set(handles.Sph1_cur, 'Value',  ampiezza(2));
+set(handles.Sph1_cur, 'String', num2str(ampiezza(2), '%.2f'));
+set(handles.Sph1_max, 'Value',  ampiezza(3));
+set(handles.Sph1_max, 'String', num2str(ampiezza(3), '%.1f'));
+set(handles.Sph1, 'Min',   ampiezza(1));
+set(handles.Sph1, 'Value', ampiezza(2));
+set(handles.Sph1, 'Max',   ampiezza(3));
 
 % Leggo i dati inseriti dall'utente
-Phii = get(handles.Phii, 'Value');
+Sph1 = get(handles.Sph1, 'Value');
 A1 = get(handles.A1, 'Value');
 A2 = get(handles.A2, 'Value');
 rho = get(handles.rho, 'Value');
 R1 = get(handles.R1, 'Value');
 R2 = get(handles.R2, 'Value');
 g = 9.81;
-u = Phii;
+u = Sph1;
 
 % Controllo sui dati nulli
 if R1 == 0, R1 = eps; end
@@ -1586,13 +1586,13 @@ G = [1/A1; 0];
 if isnan(stb)
   set(handles.Punto_Eq_txt, 'String', ...
     {'Non esiste uno stato di equilibrio con l''ingresso: ';...
-    ['Phii = ', num2str(u(1), '%.2f'), ' m^3/s']});
+    ['Phii = ', num2str(u(1), '%.2f'), ' m']});
   return
 end
 
 
 % Preparazione testo da visualizzare
-str = sprintf('In presenza dell''ingresso: Phii = %.1f m^3/s', u(1));
+str = sprintf('In presenza dell''ingresso: Phii = %.1f m', u(1));
 str1 = sprintf('\nlo stato:');
 str21 = sprintf('\n  h1 = %.1f m', x(1));
 str22 = sprintf('\n  h2 = %.1f m', x(2));
@@ -1689,7 +1689,7 @@ fclose('all');
 cd('..');
 
 % Aggiornamento degli slider
-global Phiisld A1sld A2sld rhosld R1sld R2sld h10sld h20sld;
+global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld;
 set(handles.A1_min, 'Value',  A1_min);
 set(handles.A1_min, 'String', num2str(A1_min, '%.1f'));
 set(handles.A1_cur, 'Value',  A1_cur);
@@ -1810,19 +1810,19 @@ set(handles.IngressoPar,  'String', IngressoParstr);
 set(handles.IngressoTipo, 'Value',  IngressoTipo);
 set(handles.IngressoPar,  'Value',  IngressoPar);
 
-set(handles.Phii_min, 'Value',  Phii_min);
-set(handles.Phii_min, 'String', num2str(Phii_min, '%.1f'));
-set(handles.Phii_cur, 'Value',  Phii_cur);
-set(handles.Phii_cur, 'String', num2str(Phii_cur, '%.2f'));
-set(handles.Phii_max, 'Value',  Phii_max);
-set(handles.Phii_max, 'String', num2str(Phii_max, '%.1f'));
+set(handles.Sph1_min, 'Value',  Sph1_min);
+set(handles.Sph1_min, 'String', num2str(Sph1_min, '%.1f'));
+set(handles.Sph1_cur, 'Value',  Sph1_cur);
+set(handles.Sph1_cur, 'String', num2str(Sph1_cur, '%.2f'));
+set(handles.Sph1_max, 'Value',  Sph1_max);
+set(handles.Sph1_max, 'String', num2str(Sph1_max, '%.1f'));
 
-set(handles.Phii, 'Min',   Phii_min);
-set(handles.Phii, 'Value', Phii_cur);
-set(handles.Phii, 'Max',   Phii_max);
-majorstep = Rsld.stmax / (Phii_max-Phii_min);
-minorstep = Rsld.stmin / (Phii_max-Phii_min);
-set(handles.Phii, 'SliderStep', [minorstep majorstep]);
+set(handles.Sph1, 'Min',   Sph1_min);
+set(handles.Sph1, 'Value', Sph1_cur);
+set(handles.Sph1, 'Max',   Sph1_max);
+majorstep = Rsld.stmax / (Sph1_max-Sph1_min);
+minorstep = Rsld.stmin / (Sph1_max-Sph1_min);
+set(handles.Sph1, 'SliderStep', [minorstep majorstep]);
 
 set(handles.Uscita, 'Value', Uscita);
 
@@ -1896,9 +1896,9 @@ R2_max = get(handles.R2_max, 'Value');
 IngressoTipo = get(handles.IngressoTipo, 'Value');
 IngressoPar = get(handles.IngressoPar, 'Value');
 
-Phii_min = get(handles.Phii_min, 'Value');
-Phii_cur = get(handles.Phii_cur, 'Value');
-Phii_max = get(handles.Phii_max, 'Value');
+Sph1_min = get(handles.Sph1_min, 'Value');
+Sph1_cur = get(handles.Sph1_cur, 'Value');
+Sph1_max = get(handles.Sph1_max, 'Value');
 
 % pannello stato iniziale
 h10_min = get(handles.h10_min, 'Value');
@@ -1917,9 +1917,9 @@ fprintf(fid, 'IngressoTipo = %f;\n', IngressoTipo);
 fprintf(fid, 'IngressoPar = %f;\n', IngressoPar);
 fprintf(fid, 'Uscita = %f;\n', Uscita);
 
-fprintf(fid, 'Phii_min = %f;\n', Phii_min);
-fprintf(fid, 'Phii_cur = %f;\n', Phii_cur);
-fprintf(fid, 'Phii_max = %f;\n', Phii_max);
+fprintf(fid, 'Sph1_min = %f;\n', Sph1_min);
+fprintf(fid, 'Sph1_cur = %f;\n', Sph1_cur);
+fprintf(fid, 'Sph1_max = %f;\n', Sph1_max);
 
 fprintf(fid, 'A1_min = %f;\n', A1_min);
 fprintf(fid, 'A1_cur = %f;\n', A1_cur);
@@ -2075,3 +2075,13 @@ end
 
 
 
+
+
+
+function Sph1_min_Callback(hObject, eventdata, handles)
+% hObject    handle to Sph1_min (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Sph1_min as text
+%        str2double(get(hObject,'String')) returns contents of Sph1_min as a double
