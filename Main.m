@@ -41,7 +41,7 @@ function varargout = Main(varargin)
 
 % Edit the above text to modify the response to help Main
 
-% Last Modified by GUIDE v2.5 11-Jun-2018 16:28:47
+% Last Modified by GUIDE v2.5 13-Jun-2018 10:06:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -106,18 +106,18 @@ def =[
       0        % h20, h20_cur
       10       % h20_max
       0        % Mur1_min  (28)
-      50       % Mur1, Mur1_cur
+      20       % Mur1, Mur1_cur
       100      % Mur1_max
-      0        % Gr1_min (31)
-      0        % Gr1, Gr1_cur
-      5        % Gr1_max
-      0        % Epsilon_min  (34)
-      0        % Epsilon, Epsilon_cur
-      1        % Epsilon_max
+      0        % Mur2_min (31)
+      20       % Mur2, Mur2_cur
+      100      % Mur2_max
+      0        % Sph2_min  (34)
+      5        % Sph2, Sph2_cur
+      10       % Sph2_max
       ];
     
 % Par degli slider
-global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Gr1sld Epsilonsld;
+global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld;
 
 Sph1sld.stmin = 0.1;
 Sph1sld.stmax = 1;
@@ -164,15 +164,15 @@ Mur1sld.stmax = 1;
 Mur1sld.Llim = -Inf;
 Mur1sld.Hlim = +Inf;
 
-Gr1sld.stmin = 1;
-Gr1sld.stmax = 1;
-Gr1sld.Llim = eps;
-Gr1sld.Hlim = +Inf;
+Mur2sld.stmin = 1;
+Mur2sld.stmax = 1;
+Mur2sld.Llim = -Inf;
+Mur2sld.Hlim = +Inf;
 
-Epsilonsld.stmin = 0.1;
-Epsilonsld.stmax = 1;
-Epsilonsld.Llim = eps;
-Epsilonsld.Hlim = +Inf;
+Sph2sld.stmin = 0.1;
+Sph2sld.stmax = 1;
+Sph2sld.Llim = eps;
+Sph2sld.Hlim = +Inf;
 
 evalin('base', 'input_params = containers.Map();'); 
 
@@ -279,14 +279,14 @@ R2  = get(handles.R2, 'Value');
 h10 = get(handles.h10, 'Value');
 h20 = get(handles.h20, 'Value');
 Mur1 = get(handles.Mur1, 'Value');
-Gr1 = get(handles.Gr1, 'Value');
-Epsilon = get(handles.Epsilon, 'Value');
+Mur2 = get(handles.Mur2, 'Value');
+Sph2 = get(handles.Sph2, 'Value');
 g = 9.8;
 
 
 % Esporta tutte le variabili nel Workspace per permettere a1 Simulink
 % di averne visibilità
-vars = {'A1', A1; 'A2', A2; 'rho', rho; 'R1', R1; 'Sph1', Sph1; 'R2', R2; 'h10', h10; 'h20', h20; 'Mur1', Mur1; 'Gr1', Gr1; 'Epsilon', Epsilon};
+vars = {'A1', A1; 'A2', A2; 'rho', rho; 'R1', R1; 'Sph1', Sph1; 'R2', R2; 'h10', h10; 'h20', h20; 'Mur1', Mur1; 'Mur2', Mur2; 'Sph2', Sph2};
 for i = 1:size(vars, 1)
     name = vars(i, 1);
     value = vars(i, 2);
@@ -1377,7 +1377,7 @@ end
 function Load_Defaults(handles)
 
 global def;
-global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Gr1sld Epsilonsld;
+global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld;
 
 
 % ingressi
@@ -1554,35 +1554,35 @@ majorstep = Mur1sld.stmax / (def(30)-def(28));
 minorstep = Mur1sld.stmin / (def(30)-def(28));
 set(handles.Mur1, 'SliderStep', [minorstep majorstep]);
 
-% slider Gr1
-set(handles.Gr1_min, 'Value', def(31));
-set(handles.Gr1_min, 'String', num2str(def(32), '%.1f'));
-set(handles.Gr1_cur, 'Value', def(32));
-set(handles.Gr1_cur, 'String', num2str(def(32), '%.2f'));
-set(handles.Gr1_max, 'Value', def(33));
-set(handles.Gr1_max, 'String', num2str(def(33), '%.1f'));
+% slider Mur2
+set(handles.Mur2_min, 'Value', def(31));
+set(handles.Mur2_min, 'String', num2str(def(32), '%.1f'));
+set(handles.Mur2_cur, 'Value', def(32));
+set(handles.Mur2_cur, 'String', num2str(def(32), '%.2f'));
+set(handles.Mur2_max, 'Value', def(33));
+set(handles.Mur2_max, 'String', num2str(def(33), '%.1f'));
 
-set(handles.Gr1, 'Min',   def(31)); 
-set(handles.Gr1, 'Value', def(32));
-set(handles.Gr1, 'Max',   def(33)); 
-majorstep = Gr1sld.stmax / (def(33)-def(31));
-minorstep = Gr1sld.stmin / (def(33)-def(31));
-set(handles.Gr1, 'SliderStep', [minorstep majorstep]);
+set(handles.Mur2, 'Min',   def(31)); 
+set(handles.Mur2, 'Value', def(32));
+set(handles.Mur2, 'Max',   def(33)); 
+majorstep = Mur2sld.stmax / (def(33)-def(31));
+minorstep = Mur2sld.stmin / (def(33)-def(31));
+set(handles.Mur2, 'SliderStep', [minorstep majorstep]);
 
-% slider Epsilon
-set(handles.Epsilon_min, 'Value', def(34));
-set(handles.Epsilon_min, 'String', num2str(def(34), '%.1f'));
-set(handles.Epsilon_cur, 'Value', def(35));
-set(handles.Epsilon_cur, 'String', num2str(def(35), '%.2f'));
-set(handles.Epsilon_max, 'Value', def(36));
-set(handles.Epsilon_max, 'String', num2str(def(36), '%.1f'));
+% slider Sph2
+set(handles.Sph2_min, 'Value', def(34));
+set(handles.Sph2_min, 'String', num2str(def(34), '%.1f'));
+set(handles.Sph2_cur, 'Value', def(35));
+set(handles.Sph2_cur, 'String', num2str(def(35), '%.2f'));
+set(handles.Sph2_max, 'Value', def(36));
+set(handles.Sph2_max, 'String', num2str(def(36), '%.1f'));
 
-set(handles.Epsilon, 'Min',   def(34)); 
-set(handles.Epsilon, 'Value', def(35));
-set(handles.Epsilon, 'Max',   def(36)); 
-majorstep = Epsilonsld.stmax / (def(36)-def(34));
-minorstep = Epsilonsld.stmin / (def(36)-def(34));
-set(handles.Epsilon, 'SliderStep', [minorstep majorstep]);
+set(handles.Sph2, 'Min',   def(34)); 
+set(handles.Sph2, 'Value', def(35));
+set(handles.Sph2, 'Max',   def(36)); 
+majorstep = Sph2sld.stmax / (def(36)-def(34));
+minorstep = Sph2sld.stmin / (def(36)-def(34));
+set(handles.Sph2, 'SliderStep', [minorstep majorstep]);
 
 set(handles.ConfigSaveName, 'String', 'nomefile');
 
@@ -1876,34 +1876,34 @@ minorstep = Mur1sld.stmin / (Mur1_max-Mur1_min);
 set(handles.Mur1, 'SliderStep', [minorstep majorstep]);
 
 
-set(handles.Gr1_min, 'Value',  Gr1_min);
-set(handles.Gr1_min, 'String', num2str(Gr1_min, '%.1f'));
-set(handles.Gr1_cur, 'Value',  Gr1_cur);
-set(handles.Gr1_cur, 'String', num2str(Gr1_cur, '%.2f'));
-set(handles.Gr1_max, 'Value',  Gr1_max);
-set(handles.Gr1_max, 'String', num2str(Gr1_max, '%.1f'));
+set(handles.Mur2_min, 'Value',  Mur2_min);
+set(handles.Mur2_min, 'String', num2str(Mur2_min, '%.1f'));
+set(handles.Mur2_cur, 'Value',  Mur2_cur);
+set(handles.Mur2_cur, 'String', num2str(Mur2_cur, '%.2f'));
+set(handles.Mur2_max, 'Value',  Mur2_max);
+set(handles.Mur2_max, 'String', num2str(Mur2_max, '%.1f'));
 
-set(handles.Gr1, 'Min',   Gr1_min);
-set(handles.Gr1, 'Value', Gr1_cur);
-set(handles.Gr1, 'Max',   Gr1_max);
-majorstep = Gr1sld.stmax / (Gr1_max-Gr1_min);
-minorstep = Gr1sld.stmin / (Gr1_max-Gr1_min);
-set(handles.Gr1, 'SliderStep', [minorstep majorstep]);
+set(handles.Mur2, 'Min',   Mur2_min);
+set(handles.Mur2, 'Value', Mur2_cur);
+set(handles.Mur2, 'Max',   Mur2_max);
+majorstep = Mur2sld.stmax / (Mur2_max-Mur2_min);
+minorstep = Mur2sld.stmin / (Mur2_max-Mur2_min);
+set(handles.Mur2, 'SliderStep', [minorstep majorstep]);
 
 
-set(handles.Epsilon_min, 'Value',  Epsilon_min);
-set(handles.Epsilon_min, 'String', num2str(Epsilon_min, '%.1f'));
-set(handles.Epsilon_cur, 'Value',  Epsilon_cur);
-set(handles.Epsilon_cur, 'String', num2str(Epsilon_cur, '%.2f'));
-set(handles.Epsilon_max, 'Value',  Epsilon_max);
-set(handles.Epsilon_max, 'String', num2str(Epsilon_max, '%.1f'));
+set(handles.Sph2_min, 'Value',  Sph2_min);
+set(handles.Sph2_min, 'String', num2str(Sph2_min, '%.1f'));
+set(handles.Sph2_cur, 'Value',  Sph2_cur);
+set(handles.Sph2_cur, 'String', num2str(Sph2_cur, '%.2f'));
+set(handles.Sph2_max, 'Value',  Sph2_max);
+set(handles.Sph2_max, 'String', num2str(Sph2_max, '%.1f'));
 
-set(handles.Epsilon, 'Min',   Epsilon_min);
-set(handles.Epsilon, 'Value', Epsilon_cur);
-set(handles.h20, 'Max',   Epsilon_max);
-majorstep = Epsilonsld.stmax / (Epsilon_max-Epsilon_min);
-minorstep = Epsilonsld.stmin / (Epsilon_max-Epsilon_min);
-set(handles.Epsilon, 'SliderStep', [minorstep majorstep]);
+set(handles.Sph2, 'Min',   Sph2_min);
+set(handles.Sph2, 'Value', Sph2_cur);
+set(handles.h20, 'Max',   Sph2_max);
+majorstep = Sph2sld.stmax / (Sph2_max-Sph2_min);
+minorstep = Sph2sld.stmin / (Sph2_max-Sph2_min);
+set(handles.Sph2, 'SliderStep', [minorstep majorstep]);
 
 
 % ingressi
@@ -2030,13 +2030,13 @@ Mur1_min = get(handles.Mur1_min, 'Value');
 Mur1_cur = get(handles.Mur1_cur, 'Value');
 Mur1_max = get(handles.Mur1_max, 'Value');
 
-Gr1_min = get(handles.Gr1_min, 'Value');
-Gr1_cur = get(handles.Gr1_cur, 'Value');
-Gr1_max = get(handles.Gr1_max, 'Value');
+Mur2_min = get(handles.Mur2_min, 'Value');
+Mur2_cur = get(handles.Mur2_cur, 'Value');
+Mur2_max = get(handles.Mur2_max, 'Value');
 
-Epsilon_min = get(handles.Epsilon_min, 'Value');
-Epsilon_cur = get(handles.Epsilon_cur, 'Value');
-Epsilon_max = get(handles.Epsilon_max, 'Value');
+Sph2_min = get(handles.Sph2_min, 'Value');
+Sph2_cur = get(handles.Sph2_cur, 'Value');
+Sph2_max = get(handles.Sph2_max, 'Value');
 
 
 Uscita = get(handles.Uscita, 'Value');
@@ -2083,13 +2083,13 @@ fprintf(fid, 'Mur1_min = %f;\n', Mur1_min);
 fprintf(fid, 'Mur1_cur = %f;\n', Mur1_cur);
 fprintf(fid, 'Mur1_max = %f;\n', Mur1_max);
 
-fprintf(fid, 'Gr1_min = %f;\n', Gr1_min);
-fprintf(fid, 'Gr1_cur = %f;\n', Gr1_cur);
-fprintf(fid, 'Gr1_max = %f;\n', Gr1_max);
+fprintf(fid, 'Mur2_min = %f;\n', Mur2_min);
+fprintf(fid, 'Mur2_cur = %f;\n', Mur2_cur);
+fprintf(fid, 'Mur2_max = %f;\n', Mur2_max);
 
-fprintf(fid, 'Epsilon_min = %f;\n', Epsilon_min);
-fprintf(fid, 'Epsilon_cur = %f;\n', Epsilon_cur);
-fprintf(fid, 'Epsilon_max = %f;\n', Epsilon_max);
+fprintf(fid, 'Sph2_min = %f;\n', Sph2_min);
+fprintf(fid, 'Sph2_cur = %f;\n', Sph2_cur);
+fprintf(fid, 'Sph2_max = %f;\n', Sph2_max);
 
 fclose(fid);
 fclose('all');
@@ -2209,11 +2209,11 @@ end
 
 
 % --- Executes on slider movement.
-function Gr1_Callback(hObject, eventdata, handles)
-% hObject    handle to Gr1 (see GCBO)
+function Mur2_Callback(hObject, eventdata, handles)
+% hObject    handle to Mur2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-Slider_sld_Callback(handles, handles.Gr1, handles.Gr1_cur);
+Slider_sld_Callback(handles, handles.Mur2, handles.Mur2_cur);
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 % Reset testo punto di equilibrio
@@ -2221,8 +2221,8 @@ set(handles.punto_eq_txt, 'String', '');
 
 
 % --- Executes during object creation, after setting all properties.
-function Gr1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Gr1 (see GCBO)
+function Mur2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Mur2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2233,21 +2233,21 @@ end
 
 
 
-function Gr1_min_Callback(hObject, eventdata, handles)
-% hObject    handle to Gr1_min (see GCBO)
+function Mur2_min_Callback(hObject, eventdata, handles)
+% hObject    handle to Mur2_min (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Gr1sld;
-Slider_min_Callback(handles, handles.Gr1, handles.Gr1_min, handles.Gr1_cur, handles.Gr1_max, Gr1sld.stmin, Gr1sld.stmax, Gr1sld.Llim, Gr1sld.Hlim);
+global Mur2sld;
+Slider_min_Callback(handles, handles.Mur2, handles.Mur2_min, handles.Mur2_cur, handles.Mur2_max, Mur2sld.stmin, Mur2sld.stmax, Mur2sld.Llim, Mur2sld.Hlim);
 
 
-% Hints: get(hObject,'String') returns contents of Gr1_min as text
-%        str2double(get(hObject,'String')) returns contents of Gr1_min as a double
+% Hints: get(hObject,'String') returns contents of Mur2_min as text
+%        str2double(get(hObject,'String')) returns contents of Mur2_min as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function Gr1_min_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Gr1_min (see GCBO)
+function Mur2_min_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Mur2_min (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2259,21 +2259,21 @@ end
 
 
 
-function Gr1_cur_Callback(hObject, eventdata, handles)
-% hObject    handle to Gr1_cur (see GCBO)
+function Mur2_cur_Callback(hObject, eventdata, handles)
+% hObject    handle to Mur2_cur (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Gr1sld;
-Slider_cur_Callback(handles, handles.Gr1, handles.Gr1_min, handles.Gr1_cur, handles.Gr1_max, Gr1sld.stmin, Gr1sld.stmax, Gr1sld.Llim, Gr1sld.Hlim);
+global Mur2sld;
+Slider_cur_Callback(handles, handles.Mur2, handles.Mur2_min, handles.Mur2_cur, handles.Mur2_max, Mur2sld.stmin, Mur2sld.stmax, Mur2sld.Llim, Mur2sld.Hlim);
 
 
-% Hints: get(hObject,'String') returns contents of Gr1_cur as text
-%        str2double(get(hObject,'String')) returns contents of Gr1_cur as a double
+% Hints: get(hObject,'String') returns contents of Mur2_cur as text
+%        str2double(get(hObject,'String')) returns contents of Mur2_cur as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function Gr1_cur_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Gr1_cur (see GCBO)
+function Mur2_cur_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Mur2_cur (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2285,21 +2285,21 @@ end
 
 
 
-function Gr1_max_Callback(hObject, eventdata, handles)
-% hObject    handle to Gr1_max (see GCBO)
+function Mur2_max_Callback(hObject, eventdata, handles)
+% hObject    handle to Mur2_max (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Gr1sld;
-Slider_max_Callback(handles, handles.Gr1, handles.Gr1_min, handles.Gr1_cur, handles.Gr1_max, Gr1sld.stmin, Gr1sld.stmax, Gr1sld.Llim, Gr1sld.Hlim);
+global Mur2sld;
+Slider_max_Callback(handles, handles.Mur2, handles.Mur2_min, handles.Mur2_cur, handles.Mur2_max, Mur2sld.stmin, Mur2sld.stmax, Mur2sld.Llim, Mur2sld.Hlim);
 
 
-% Hints: get(hObject,'String') returns contents of Gr1_max as text
-%        str2double(get(hObject,'String')) returns contents of Gr1_max as a double
+% Hints: get(hObject,'String') returns contents of Mur2_max as text
+%        str2double(get(hObject,'String')) returns contents of Mur2_max as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function Gr1_max_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Gr1_max (see GCBO)
+function Mur2_max_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Mur2_max (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2311,11 +2311,11 @@ end
 
 
 % --- Executes on slider movement.
-function Epsilon_Callback(hObject, eventdata, handles)
-% hObject    handle to Epsilon (see GCBO)
+function Sph2_Callback(hObject, eventdata, handles)
+% hObject    handle to Sph2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-Slider_sld_Callback(handles, handles.Epsilon, handles.Epsilon_cur);
+Slider_sld_Callback(handles, handles.Sph2, handles.Sph2_cur);
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 % Reset testo punto di equilibrio
@@ -2323,8 +2323,8 @@ set(handles.punto_eq_txt, 'String', '');
 
 
 % --- Executes during object creation, after setting all properties.
-function Epsilon_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Epsilon (see GCBO)
+function Sph2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Sph2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2335,21 +2335,21 @@ end
 
 
 
-function Epsilon_min_Callback(hObject, eventdata, handles)
-% hObject    handle to Epsilon_min (see GCBO)
+function Sph2_min_Callback(hObject, eventdata, handles)
+% hObject    handle to Sph2_min (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Epsilonsld;
-Slider_min_Callback(handles, handles.Epsilon, handles.Epsilon_min, handles.Epsilon_cur, handles.Epsilon_max, Epsilonsld.stmin, Epsilonsld.stmax, Epsilonsld.Llim, Epsilonsld.Hlim);
+global Sph2sld;
+Slider_min_Callback(handles, handles.Sph2, handles.Sph2_min, handles.Sph2_cur, handles.Sph2_max, Sph2sld.stmin, Sph2sld.stmax, Sph2sld.Llim, Sph2sld.Hlim);
 
 
-% Hints: get(hObject,'String') returns contents of Epsilon_min as text
-%        str2double(get(hObject,'String')) returns contents of Epsilon_min as a double
+% Hints: get(hObject,'String') returns contents of Sph2_min as text
+%        str2double(get(hObject,'String')) returns contents of Sph2_min as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function Epsilon_min_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Epsilon_min (see GCBO)
+function Sph2_min_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Sph2_min (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2361,20 +2361,20 @@ end
 
 
 
-function Epsilon_cur_Callback(hObject, eventdata, handles)
-% hObject    handle to Epsilon_cur (see GCBO)
+function Sph2_cur_Callback(hObject, eventdata, handles)
+% hObject    handle to Sph2_cur (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Epsilonsld;
-Slider_cur_Callback(handles, handles.Epsilon, handles.Epsilon_min, handles.Epsilon_cur, handles.Epsilon_max, Epsilonsld.stmin, Epsilonsld.stmax, Epsilonsld.Llim, Epsilonsld.Hlim);
+global Sph2sld;
+Slider_cur_Callback(handles, handles.Sph2, handles.Sph2_min, handles.Sph2_cur, handles.Sph2_max, Sph2sld.stmin, Sph2sld.stmax, Sph2sld.Llim, Sph2sld.Hlim);
 
-% Hints: get(hObject,'String') returns contents of Epsilon_cur as text
-%        str2double(get(hObject,'String')) returns contents of Epsilon_cur as a double
+% Hints: get(hObject,'String') returns contents of Sph2_cur as text
+%        str2double(get(hObject,'String')) returns contents of Sph2_cur as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function Epsilon_cur_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Epsilon_cur (see GCBO)
+function Sph2_cur_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Sph2_cur (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2386,20 +2386,20 @@ end
 
 
 
-function Epsilon_max_Callback(hObject, eventdata, handles)
-% hObject    handle to Epsilon_max (see GCBO)
+function Sph2_max_Callback(hObject, eventdata, handles)
+% hObject    handle to Sph2_max (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Epsilonsld;
-Slider_max_Callback(handles, handles.Epsilon, handles.Epsilon_min, handles.Epsilon_cur, handles.Epsilon_max, Epsilonsld.stmin, Epsilonsld.stmax, Epsilonsld.Llim, Epsilonsld.Hlim);
+global Sph2sld;
+Slider_max_Callback(handles, handles.Sph2, handles.Sph2_min, handles.Sph2_cur, handles.Sph2_max, Sph2sld.stmin, Sph2sld.stmax, Sph2sld.Llim, Sph2sld.Hlim);
 
-% Hints: get(hObject,'String') returns contents of Epsilon_max as text
-%        str2double(get(hObject,'String')) returns contents of Epsilon_max as a double
+% Hints: get(hObject,'String') returns contents of Sph2_max as text
+%        str2double(get(hObject,'String')) returns contents of Sph2_max as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function Epsilon_max_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Epsilon_max (see GCBO)
+function Sph2_max_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Sph2_max (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
