@@ -41,7 +41,7 @@ function varargout = Main(varargin)
 
 % Edit the above text to modify the response to help Main
 
-% Last Modified by GUIDE v2.5 13-Jun-2018 10:06:08
+% Last Modified by GUIDE v2.5 13-Jun-2018 15:57:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -106,18 +106,21 @@ def =[
       0        % h20, h20_cur
       10       % h20_max
       0        % Mur1_min  (28)
-      20       % Mur1, Mur1_cur
-      100      % Mur1_max
+      15       % Mur1, Mur1_cur
+      80      % Mur1_max
       0        % Mur2_min (31)
       20       % Mur2, Mur2_cur
       100      % Mur2_max
       0        % Sph2_min  (34)
       5        % Sph2, Sph2_cur
       10       % Sph2_max
+      0        % Spe_min  (34)
+      5        % Spe, Spe_cur
+      10       % Spe_max
       ];
     
 % Par degli slider
-global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld;
+global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld Spesld;
 
 Sph1sld.stmin = 0.1;
 Sph1sld.stmax = 1;
@@ -173,6 +176,11 @@ Sph2sld.stmin = 0.1;
 Sph2sld.stmax = 1;
 Sph2sld.Llim = eps;
 Sph2sld.Hlim = +Inf;
+
+Spesld.stmin = 0.1;
+Spesld.stmax = 1;
+Spesld.Llim = eps;
+Spesld.Hlim = +Inf;
 
 evalin('base', 'input_params = containers.Map();'); 
 
@@ -254,23 +262,23 @@ bdclose(Uscita);
 Uscita = 'SistemaIdraulico';
 
 % Carico i valori dei parametri dal Workspace
-ampiezza = evalin('base', 'input_params(''Ampiezza [m]'')');
-if get(handles.IngressoTipo, 'Value') == 3
-    frequenza = evalin('base', 'input_params(''Frequenza [Hz]'')');
-else
-    frequenza = evalin('base', 'input_params(''Frequenza [Hz]'')');
-end
-dutycycle = evalin('base', 'input_params(''Duty Cycle [%]'')');
+% ampiezza = evalin('base', 'input_params(''Ampiezza [m]'')');
+% if get(handles.IngressoTipo, 'Value') == 3
+%     frequenza = evalin('base', 'input_params(''Frequenza [Hz]'')');
+% else
+%     frequenza = evalin('base', 'input_params(''Frequenza [Hz]'')');
+% end
+% dutycycle = evalin('base', 'input_params(''Duty Cycle [%]'')');
 
 % Controllo sui dati nulli
-if frequenza == 0, frequenza = eps; end
-if get(handles.IngressoTipo, 'Value') == 3, if frequenza == 1000, frequenza = 999.999; end, end
-if dutycycle < 0.0001, dutycycle = 0.0001; end
-if dutycycle == 100, dutycycle = 100-0.0001; end
+% if frequenza == 0, frequenza = eps; end
+% if get(handles.IngressoTipo, 'Value') == 3, if frequenza == 1000, frequenza = 999.999; end, end
+% if dutycycle < 0.0001, dutycycle = 0.0001; end
+% if dutycycle == 100, dutycycle = 100-0.0001; end
 
 
 % Leggo i dati inseriti dall'utente
-Sph1  = ampiezza(2);
+Sph1  = get(handles.Sph1, 'Value');
 A1   = get(handles.A1, 'Value');
 A2   = get(handles.A2, 'Value');
 rho = get(handles.rho, 'Value');
@@ -281,12 +289,13 @@ h20 = get(handles.h20, 'Value');
 Mur1 = get(handles.Mur1, 'Value');
 Mur2 = get(handles.Mur2, 'Value');
 Sph2 = get(handles.Sph2, 'Value');
+Spe = get(handles.Spe, 'Value');
 g = 9.8;
 
 
 % Esporta tutte le variabili nel Workspace per permettere a1 Simulink
 % di averne visibilità
-vars = {'A1', A1; 'A2', A2; 'rho', rho; 'R1', R1; 'Sph1', Sph1; 'R2', R2; 'h10', h10; 'h20', h20; 'Mur1', Mur1; 'Mur2', Mur2; 'Sph2', Sph2};
+vars = {'A1', A1; 'A2', A2; 'rho', rho; 'R1', R1; 'Sph1', Sph1; 'R2', R2; 'h10', h10; 'h20', h20; 'Mur1', Mur1; 'Mur2', Mur2; 'Sph2', Sph2; 'Spe', Spe};
 for i = 1:size(vars, 1)
     name = vars(i, 1);
     value = vars(i, 2);
@@ -307,72 +316,76 @@ Tau = min(1, Tau);  % sogliatura per evitare sim troppo lunghe
 open_system(Uscita);
 
 
-% Impostazione del segnale in input al sistema
-h = find_system(Uscita, 'Name', 'input');
-if size(h) == [1, 1]
-  system_blocks = find_system(Uscita);
-  if numel(find(strcmp(system_blocks, [Uscita '/step1']))) > 0
-    delete_line(Uscita, 'step1/1', 'input/1');
-    delete_block([Uscita, '/step1']);
-  end
-  if numel(find(strcmp(system_blocks, [Uscita '/step2']))) > 0
-    delete_line(Uscita, 'step2/1', 'input/2');
-    delete_block([Uscita, '/step2']);  
-  end
-  if numel(find(strcmp(system_blocks, [Uscita '/input']))) > 0
-    delete_line(Uscita, 'input/1', 'Gain/1');
-    delete_block([Uscita, '/input']);
-  end
-end
+% % Impostazione del segnale in input al sistema
+% h = find_system(Uscita, 'Name', 'input');
+% if size(h) == [1, 1]
+%   system_blocks = find_system(Uscita);
+%   if numel(find(strcmp(system_blocks, [Uscita '/step1']))) > 0
+%     delete_line(Uscita, 'step1/1', 'input/1');
+%     delete_block([Uscita, '/step1']);
+%   end
+%   if numel(find(strcmp(system_blocks, [Uscita '/step2']))) > 0
+%     delete_line(Uscita, 'step2/1', 'input/2');
+%     delete_block([Uscita, '/step2']);  
+%   end
+%   if numel(find(strcmp(system_blocks, [Uscita '/input']))) > 0
+%     delete_line(Uscita, 'input/1', 'Gain/1');
+%     delete_block([Uscita, '/input']);
+%   end
+% end
 
 
-% Legge qual'è il nuovo segnale in iNput da simulare
-val = get(handles.IngressoTipo, 'Value');
-switch val
-  case 1  % step
-      add_block('simulink/Sources/Step', [Uscita, '/input'], 'Time', num2str(0.5*Tau));
-  case 2  % impulso
-      add_block('simulink/Sources/Step', [Uscita, '/step1'], 'Time', num2str(0.5*Tau));
-      add_block('simulink/Sources/Step', [Uscita, '/step2'], 'Time', num2str(0.5*Tau+min(0.25*Tau, 0.01)));
-      add_block('simulink/Math Operations/Sum', [Uscita, '/input'], 'Inputs', '+-');
-  case 3  % treno impulsi
-      add_block('simulink/Sources/Pulse Generator', [Uscita, '/input'], 'Period', num2str(1/frequenza(2)), 'PulseWidth', num2str(frequenza(2)*0.1));
-  case 4  % sinusoide
-      add_block('simulink/Sources/Sine Wave', [Uscita, '/input'], 'Frequency', num2str(2*pi*frequenza(2)));
-  case 5  % onda quadra
-      add_block('simulink/Sources/Pulse Generator', [Uscita, '/input'], 'Period', num2str(1/frequenza(2)), 'PulseWidth', num2str(dutycycle(2)));
-  case 6  % onda dente di sega
-      add_block('simulink/Sources/Repeating Sequence', [Uscita, '/input'], 'rep_seq_t', ['[0 ' num2str(1/frequenza(2)) ']'], 'rep_seq_y', '[0 1]');
-end;
+% % Legge qual'è il nuovo segnale in iNput da simulare
+% val = get(handles.IngressoTipo, 'Value');
+% switch val
+%   case 1  % step
+%       add_block('simulink/Sources/Step', [Uscita, '/input'], 'Time', num2str(0.5*Tau));
+%   case 2  % impulso
+%       add_block('simulink/Sources/Step', [Uscita, '/step1'], 'Time', num2str(0.5*Tau));
+%       add_block('simulink/Sources/Step', [Uscita, '/step2'], 'Time', num2str(0.5*Tau+min(0.25*Tau, 0.01)));
+%       add_block('simulink/Math Operations/Sum', [Uscita, '/input'], 'Inputs', '+-');
+%   case 3  % treno impulsi
+%       add_block('simulink/Sources/Pulse Generator', [Uscita, '/input'], 'Period', num2str(1/frequenza(2)), 'PulseWidth', num2str(frequenza(2)*0.1));
+%   case 4  % sinusoide
+%       add_block('simulink/Sources/Sine Wave', [Uscita, '/input'], 'Frequency', num2str(2*pi*frequenza(2)));
+%   case 5  % onda quadra
+%       add_block('simulink/Sources/Pulse Generator', [Uscita, '/input'], 'Period', num2str(1/frequenza(2)), 'PulseWidth', num2str(dutycycle(2)));
+%   case 6  % onda dente di sega
+%       add_block('simulink/Sources/Repeating Sequence', [Uscita, '/input'], 'rep_seq_t', ['[0 ' num2str(1/frequenza(2)) ']'], 'rep_seq_y', '[0 1]');
+% end;
 
 
 % Modifica della durata della simulazione
-switch val
-  case {1, 2}
-      set_param(Uscita, 'StopTime', num2str(5*Tau + 0.5*Tau));
-  case {3, 4, 5, 6}
-      set_param(Uscita, 'StopTime', num2str(6/frequenza(2)));
-end
+ set_param(Uscita, 'StopTime', num2str(5*Tau + 0.5*Tau));
+ set_param(Uscita, 'StopTime', num2str(3));
+      
+%       
+% switch val
+%   case {1, 2}
+%       set_param(Uscita, 'StopTime', num2str(5*Tau + 0.5*Tau));
+%   case {3, 4, 5, 6}
+%       set_param(Uscita, 'StopTime', num2str(6/frequenza(2)));
+% end
 
 
 % Modifica dello sfondo e della posizione del blocco inserito
-set_param([Uscita, '/input'], 'BackgroundColor', '[0, 206, 206]');
-GainPos = get_param([Uscita, '/Gain'], 'Position');
-avgGainh = (GainPos(2)+GainPos(4))/2;
-if val ~= 2
-  set_param([Uscita, '/input'], 'Position', ['[0,' num2str(avgGainh-15) ', 65,' num2str(avgGainh+15) ']']); % '[40, 90, 105, 120]');
-else
-  set_param([Uscita, '/step1'], 'BackgroundColor', '[0, 206, 206]');
-  set_param([Uscita, '/step2'], 'BackgroundColor', '[0, 206, 206]');
-  set_param([Uscita, '/step1'], 'Position', ['[0,' num2str(avgGainh-30-15) ', 65 ,' num2str(avgGainh-30+15) ']']);    % '[20, 45, 85, 75]');
-  set_param([Uscita, '/step2'], 'Position', ['[0,' num2str(avgGainh+30-15) ', 65 ,' num2str(avgGainh+30+15)  ']']);  % '[20, 135, 85, 165]');
-  set_param([Uscita, '/input'], 'Position', ['[75,' num2str(avgGainh-10) ', 95,' num2str(avgGainh+10) ']']); % '[95, 95, 115, 115]');
-  add_line(Uscita, 'step1/1', 'input/1' , 'autorouting', 'on');
-  add_line(Uscita, 'step2/1', 'input/2' , 'autorouting', 'on');
-end
+% set_param([Uscita, '/input'], 'BackgroundColor', '[0, 206, 206]');
+% GainPos = get_param([Uscita, '/Gain'], 'Position');
+% avgGainh = (GainPos(2)+GainPos(4))/2;
+% if val ~= 2
+%   set_param([Uscita, '/input'], 'Position', ['[0,' num2str(avgGainh-15) ', 65,' num2str(avgGainh+15) ']']); % '[40, 90, 105, 120]');
+% else
+%   set_param([Uscita, '/step1'], 'BackgroundColor', '[0, 206, 206]');
+%   set_param([Uscita, '/step2'], 'BackgroundColor', '[0, 206, 206]');
+%   set_param([Uscita, '/step1'], 'Position', ['[0,' num2str(avgGainh-30-15) ', 65 ,' num2str(avgGainh-30+15) ']']);    % '[20, 45, 85, 75]');
+%   set_param([Uscita, '/step2'], 'Position', ['[0,' num2str(avgGainh+30-15) ', 65 ,' num2str(avgGainh+30+15)  ']']);  % '[20, 135, 85, 165]');
+%   set_param([Uscita, '/input'], 'Position', ['[75,' num2str(avgGainh-10) ', 95,' num2str(avgGainh+10) ']']); % '[95, 95, 115, 115]');
+%   add_line(Uscita, 'step1/1', 'input/1' , 'autorouting', 'on');
+%   add_line(Uscita, 'step2/1', 'input/2' , 'autorouting', 'on');
+% end
 
 % Nuovo collegamento con il blocco successivo (Gain)
-add_line(Uscita, 'input/1', 'Gain/1' , 'autorouting', 'on');
+% add_line(Uscita, 'input/1', 'Gain/1' , 'autorouting', 'on');
 
 % Salva il sistema
 save_system(Uscita);
@@ -1125,130 +1138,130 @@ end
 
 %% INGRESSI
 % --- Executes on selection change in IngressoTipo.
-function IngressoTipo_Callback(hObject, eventdata, handles)
-% hObject    handle to IngressoTipo (see GCBO)
-% eventdata  reserved - to be defined in a1 future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = get(hObject,'String') returns IngressoTipo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from IngressoTipo
-
-% Segnala la modifica
-global modified;
-modified = true;
-list = get(handles.ConfigLoadName, 'String');
-index = get(handles.ConfigLoadName, 'Value');
-name = [list{index}, '_'];
-set(handles.ConfigSaveName, 'String', name);
-
-
-id_ingresso = get(hObject, 'Value');
-
-new_String = cell(1);
-new_String{1} = 'Ampiezza [m]';
-
-
-switch id_ingresso
-  case {1, 2}
-    set(handles.IngressoPar, 'Value', 1);
-    set(handles.IngressoPar, 'Enable', 'off');
-  case 3
-    new_String{2} = 'Frequenza [Hz]'; 
-    if get(handles.IngressoPar, 'Value') > 2
-            set(handles.IngressoPar, 'Value', 2);
-        end
-        set(handles.IngressoPar, 'Enable', 'on');
-  case 5
-    new_String{2} = 'Frequenza [Hz]'; 
-    new_String{3} = 'Duty Cycle [%]';  
-    if get(handles.IngressoPar, 'Value') > 3
-            set(handles.IngressoPar, 'Value', 3);
-        end
-        set(handles.IngressoPar, 'Enable', 'on');
-    
-  case {4, 6}
-    new_String{2} = 'Frequenza [Hz]'; 
-    if get(handles.IngressoPar, 'Value') > 2
-            set(handles.IngressoPar, 'Value', 2);
-        end
-    set(handles.IngressoPar, 'Enable', 'on');
-end
-
-set(handles.IngressoPar, 'String', new_String);
-set(handles.IngressoTipo, 'Value', id_ingresso);
-set(handles.IngressoPar, 'Value', 1);
-
-parametri = get(handles.IngressoPar, 'String');
-param_name = parametri{get(handles.IngressoPar, 'Value')};
-values = evalin('base', ['input_params(''' param_name ''')']);
-
-set(handles.Sph1_min, 'Value',  values(1));
-set(handles.Sph1_min, 'String', num2str(values(1), '%.1f'));
-set(handles.Sph1_cur, 'Value',  values(2));
-set(handles.Sph1_cur, 'String', num2str(values(2), '%.1f'));
-set(handles.Sph1_max, 'Value',  values(3));
-set(handles.Sph1_max, 'String', num2str(values(3), '%.1f'));
-set(handles.Sph1, 'Min',   values(1));
-set(handles.Sph1, 'Value', values(2));
-set(handles.Sph1, 'Max',   values(3));
-
-
-% --- Executes during object creation, after setting all properties.
-function IngressoTipo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to IngressoTipo (see GCBO)
-% eventdata  reserved - to be defined in a1 future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a1 white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in IngressoPar.
-function IngressoPar_Callback(hObject, eventdata, handles)
-% hObject    handle to IngressoPar (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-%Segnala la modifica
-global modified;
-modified = true;
-list = get(handles.ConfigLoadName, 'String');
-index = get(handles.ConfigLoadName, 'Value');
-name = [list{index}, '_'];
-set(handles.ConfigSaveName, 'String', name);
-
-
-parametri = get(handles.IngressoPar, 'String');
-param_name = parametri{get(handles.IngressoPar, 'Value')};
-values = evalin('base', ['input_params(''' param_name ''')']);
-
-set(handles.Sph1_min, 'Value',  values(1));
-set(handles.Sph1_min, 'String', num2str(values(1), '%.1f'));
-set(handles.Sph1_cur, 'Value',  values(2));
-set(handles.Sph1_cur, 'String', num2str(values(2), '%.1f'));
-set(handles.Sph1_max, 'Value',  values(3));
-set(handles.Sph1_max, 'String', num2str(values(3), '%.1f'));
-set(handles.Sph1, 'Min',   values(1));
-set(handles.Sph1, 'Max',   values(3));
-set(handles.Sph1, 'Value', values(2));
-
-
-
-% --- Executes during object creation, after setting all properties.
-function IngressoPar_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to IngressoPar (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
+% function IngressoTipo_Callback(hObject, eventdata, handles)
+% % hObject    handle to IngressoTipo (see GCBO)
+% % eventdata  reserved - to be defined in a1 future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% % Hints: contents = get(hObject,'String') returns IngressoTipo contents as cell array
+% %        contents{get(hObject,'Value')} returns selected item from IngressoTipo
+% 
+% % Segnala la modifica
+% global modified;
+% modified = true;
+% list = get(handles.ConfigLoadName, 'String');
+% index = get(handles.ConfigLoadName, 'Value');
+% name = [list{index}, '_'];
+% set(handles.ConfigSaveName, 'String', name);
+% 
+% 
+% id_ingresso = get(hObject, 'Value');
+% 
+% new_String = cell(1);
+% new_String{1} = 'Ampiezza [m]';
+% 
+% 
+% switch id_ingresso
+%   case {1, 2}
+%     set(handles.IngressoPar, 'Value', 1);
+%     set(handles.IngressoPar, 'Enable', 'off');
+%   case 3
+%     new_String{2} = 'Frequenza [Hz]'; 
+%     if get(handles.IngressoPar, 'Value') > 2
+%             set(handles.IngressoPar, 'Value', 2);
+%         end
+%         set(handles.IngressoPar, 'Enable', 'on');
+%   case 5
+%     new_String{2} = 'Frequenza [Hz]'; 
+%     new_String{3} = 'Duty Cycle [%]';  
+%     if get(handles.IngressoPar, 'Value') > 3
+%             set(handles.IngressoPar, 'Value', 3);
+%         end
+%         set(handles.IngressoPar, 'Enable', 'on');
+%     
+%   case {4, 6}
+%     new_String{2} = 'Frequenza [Hz]'; 
+%     if get(handles.IngressoPar, 'Value') > 2
+%             set(handles.IngressoPar, 'Value', 2);
+%         end
+%     set(handles.IngressoPar, 'Enable', 'on');
+% end
+% 
+% set(handles.IngressoPar, 'String', new_String);
+% set(handles.IngressoTipo, 'Value', id_ingresso);
+% set(handles.IngressoPar, 'Value', 1);
+% 
+% parametri = get(handles.IngressoPar, 'String');
+% param_name = parametri{get(handles.IngressoPar, 'Value')};
+% values = evalin('base', ['input_params(''' param_name ''')']);
+% 
+% set(handles.Sph1_min, 'Value',  values(1));
+% set(handles.Sph1_min, 'String', num2str(values(1), '%.1f'));
+% set(handles.Sph1_cur, 'Value',  values(2));
+% set(handles.Sph1_cur, 'String', num2str(values(2), '%.1f'));
+% set(handles.Sph1_max, 'Value',  values(3));
+% set(handles.Sph1_max, 'String', num2str(values(3), '%.1f'));
+% set(handles.Sph1, 'Min',   values(1));
+% set(handles.Sph1, 'Value', values(2));
+% set(handles.Sph1, 'Max',   values(3));
+% 
+% 
+% % --- Executes during object creation, after setting all properties.
+% function IngressoTipo_CreateFcn(hObject, eventdata, handles)
+% % hObject    handle to IngressoTipo (see GCBO)
+% % eventdata  reserved - to be defined in a1 future version of MATLAB
+% % handles    empty - handles not created until after all CreateFcns called
+% 
+% % Hint: popupmenu controls usually have a1 white background on Windows.
+% %       See ISPC and COMPUTER.
+% if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+%     set(hObject,'BackgroundColor','white');
+% end
+% 
+% 
+% % --- Executes on selection change in IngressoPar.
+% function IngressoPar_Callback(hObject, eventdata, handles)
+% % hObject    handle to IngressoPar (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% 
+% %Segnala la modifica
+% global modified;
+% modified = true;
+% list = get(handles.ConfigLoadName, 'String');
+% index = get(handles.ConfigLoadName, 'Value');
+% name = [list{index}, '_'];
+% set(handles.ConfigSaveName, 'String', name);
+% 
+% 
+% parametri = get(handles.IngressoPar, 'String');
+% param_name = parametri{get(handles.IngressoPar, 'Value')};
+% values = evalin('base', ['input_params(''' param_name ''')']);
+% 
+% set(handles.Sph1_min, 'Value',  values(1));
+% set(handles.Sph1_min, 'String', num2str(values(1), '%.1f'));
+% set(handles.Sph1_cur, 'Value',  values(2));
+% set(handles.Sph1_cur, 'String', num2str(values(2), '%.1f'));
+% set(handles.Sph1_max, 'Value',  values(3));
+% set(handles.Sph1_max, 'String', num2str(values(3), '%.1f'));
+% set(handles.Sph1, 'Min',   values(1));
+% set(handles.Sph1, 'Max',   values(3));
+% set(handles.Sph1, 'Value', values(2));
+% 
+% 
+% 
+% % --- Executes during object creation, after setting all properties.
+% function IngressoPar_CreateFcn(hObject, eventdata, handles)
+% % hObject    handle to IngressoPar (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    empty - handles not created until after all CreateFcns called
+% 
+% % Hint: popupmenu controls usually have a white background on Windows.
+% %       See ISPC and COMPUTER.
+% if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+%     set(hObject,'BackgroundColor','white');
+% end
 
 
 %%
@@ -1260,11 +1273,11 @@ function Sph1_Callback(hObject, eventdata, handles)
 Slider_sld_Callback(handles, handles.Sph1, handles.Sph1_cur);
 
 val = get(handles.Sph1, 'Value');
-parametri = get(handles.IngressoPar, 'String');
-param_name = parametri{get(handles.IngressoPar, 'Value')};
-values = evalin('base', ['input_params(''' param_name ''')']);
+% parametri = get(handles.IngressoPar, 'String');
+% param_name = parametri{get(handles.IngressoPar, 'Value')};
+%values = evalin('base', ['input_params(''' param_name ''')']);
 values(2) = val;
-evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
+%evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
 
 % Past instruction:
 % evalin('base', ['input_param(' num2str(get(handles.IngressoPar, 'Value')) ') = ' num2str(get(hObject, 'Value')) ';']);
@@ -1292,10 +1305,10 @@ function Sph1_max_Callback(hObject, eventdata, handles)
 global Sph1sld;
 Slider_max_Callback(handles, handles.Sph1, handles.Sph1_min, handles.Sph1_cur, handles.Sph1_max, Sph1sld.stmin, Sph1sld.stmax, Sph1sld.Llim, Sph1sld.Hlim);
 
-parametri = get(handles.IngressoPar, 'String');
-param_name = parametri{get(handles.IngressoPar, 'Value')};
-values = [get(handles.Sph1, 'Min') get(handles.Sph1, 'Value'), get(handles.Sph1, 'Max')];
-evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
+% parametri = get(handles.IngressoPar, 'String');
+% param_name = parametri{get(handles.IngressoPar, 'Value')};
+% values = [get(handles.Sph1, 'Min') get(handles.Sph1, 'Value'), get(handles.Sph1, 'Max')];
+% evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
 
 % Hints: get(hObject,'String') returns contents of Sph1_max as text
 %        str2double(get(hObject,'String')) returns contents of Sph1_max as a1 double
@@ -1320,11 +1333,11 @@ function Sph1_min_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global Sph1sld;
 Slider_min_Callback(handles, handles.Sph1, handles.Sph1_min, handles.Sph1_cur, handles.Sph1_max, Sph1sld.stmin, Sph1sld.stmax, Sph1sld.Llim, Sph1sld.Hlim);
-
-parametri = get(handles.IngressoPar, 'String');
-param_name = parametri{get(handles.IngressoPar, 'Value')};
-values = [get(handles.Sph1, 'Min') get(handles.Sph1, 'Value'), get(handles.Sph1, 'Max')];
-evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
+% 
+% parametri = get(handles.IngressoPar, 'String');
+% param_name = parametri{get(handles.IngressoPar, 'Value')};
+% values = [get(handles.Sph1, 'Min') get(handles.Sph1, 'Value'), get(handles.Sph1, 'Max')];
+% evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
 % Hints: get(hObject,'String') returns contents of Sph1_min as text
 %        str2double(get(hObject,'String')) returns contents of Sph1_min as a1 double
 
@@ -1350,11 +1363,11 @@ function Sph1_cur_Callback(hObject, eventdata, handles)
 global Sph1sld;
 Slider_cur_Callback(handles, handles.Sph1, handles.Sph1_min, handles.Sph1_cur, handles.Sph1_max, Sph1sld.stmin, Sph1sld.stmax, Sph1sld.Llim, Sph1sld.Hlim);
 
-
-parametri = get(handles.IngressoPar, 'String');
-param_name = parametri{get(handles.IngressoPar, 'Value')}; 
-values = [get(handles.Sph1, 'Min') get(handles.Sph1, 'Value'), get(handles.Sph1, 'Max')];
-evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
+% 
+% parametri = get(handles.IngressoPar, 'String');
+% param_name = parametri{get(handles.IngressoPar, 'Value')}; 
+% values = [get(handles.Sph1, 'Min') get(handles.Sph1, 'Value'), get(handles.Sph1, 'Max')];
+% evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
 % Hints: get(hObject,'String') returns contents of Sph1_cur as text
 %        str2double(get(hObject,'String')) returns contents of Sph1_cur as a1 double
 
@@ -1377,34 +1390,34 @@ end
 function Load_Defaults(handles)
 
 global def;
-global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld;
+global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld Spesld;
 
 
 % ingressi
-IngressoParstr = cell(1);
-IngressoParstr{1} = 'Ampiezza [m]';
-IngressoParval = get(handles.IngressoPar, 'Value');
-set(handles.IngressoPar, 'Enable', 'on');
-
-switch def(1)
-  case {1, 2}
-    set(handles.IngressoPar, 'Value', 1);
-    set(handles.IngressoPar, 'Enable', 'off');
-  case 3
-    IngressoParstr{2} = 'Frequenza [Hz]';
-    set(handles.IngressoPar, 'Value', 2);
-  case 5
-    IngressoParstr{2} = 'Frequenza [Hz]'; 
-    IngressoParstr{3} = 'Duty Cycle [%]'; 
-    set(handles.IngressoPar, 'Value', 3);
-  case {4, 6}
-    IngressoParstr{2} = 'Frequenza [Hz]'; 
-    set(handles.IngressoPar, 'Value', 2);
-end
-
-set(handles.IngressoPar, 'String', IngressoParstr);
-set(handles.IngressoTipo, 'Value', def(1));
-set(handles.IngressoPar, 'Value', def(2));
+% IngressoParstr = cell(1);
+% IngressoParstr{1} = 'Ampiezza [m]';
+% IngressoParval = get(handles.IngressoPar, 'Value');
+% set(handles.IngressoPar, 'Enable', 'on');
+% 
+% switch def(1)
+%   case {1, 2}
+%     set(handles.IngressoPar, 'Value', 1);
+%     set(handles.IngressoPar, 'Enable', 'off');
+%   case 3
+%     IngressoParstr{2} = 'Frequenza [Hz]';
+%     set(handles.IngressoPar, 'Value', 2);
+%   case 5
+%     IngressoParstr{2} = 'Frequenza [Hz]'; 
+%     IngressoParstr{3} = 'Duty Cycle [%]'; 
+%     set(handles.IngressoPar, 'Value', 3);
+%   case {4, 6}
+%     IngressoParstr{2} = 'Frequenza [Hz]'; 
+%     set(handles.IngressoPar, 'Value', 2);
+% end
+% 
+% set(handles.IngressoPar, 'String', IngressoParstr);
+% set(handles.IngressoTipo, 'Value', def(1));
+% set(handles.IngressoPar, 'Value', def(2));
 
 % Uscita
 set(handles.Uscita, 'Value', def(3)); 
@@ -1584,6 +1597,21 @@ majorstep = Sph2sld.stmax / (def(36)-def(34));
 minorstep = Sph2sld.stmin / (def(36)-def(34));
 set(handles.Sph2, 'SliderStep', [minorstep majorstep]);
 
+% slider Spe
+set(handles.Spe_min, 'Value', def(37));
+set(handles.Spe_min, 'String', num2str(def(37), '%.1f'));
+set(handles.Spe_cur, 'Value', def(38));
+set(handles.Spe_cur, 'String', num2str(def(38), '%.2f'));
+set(handles.Spe_max, 'Value', def(39));
+set(handles.Spe_max, 'String', num2str(def(39), '%.1f'));
+
+set(handles.Spe, 'Min',   def(37)); 
+set(handles.Spe, 'Value', def(38));
+set(handles.Sph2, 'Max',   def(39)); 
+majorstep = Spesld.stmax / (def(39)-def(37));
+minorstep = Spesld.stmin / (def(39)-def(37));
+set(handles.Sph2, 'SliderStep', [minorstep majorstep]);
+
 set(handles.ConfigSaveName, 'String', 'nomefile');
 
 
@@ -1613,21 +1641,21 @@ function Punto_eq_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 clc
 
-ampiezza = evalin('base', 'input_params(''Ampiezza [m]'')');
+% ampiezza = evalin('base', 'input_params(''Set point equilibrio Spe [m]'')');
 
-set(handles.IngressoTipo,'Value',1);
-set(handles.IngressoPar, 'Value', 1);
-set(handles.IngressoPar, 'Enable', 'off');
+% set(handles.IngressoTipo,'Value',1);
+% set(handles.IngressoPar, 'Value', 1);
+% set(handles.IngressoPar, 'Enable', 'off');
 
-set(handles.Sph1_min, 'Value',  ampiezza(1));
-set(handles.Sph1_min, 'String', num2str(ampiezza(1), '%.1f'));
-set(handles.Sph1_cur, 'Value',  ampiezza(2));
-set(handles.Sph1_cur, 'String', num2str(ampiezza(2), '%.2f'));
-set(handles.Sph1_max, 'Value',  ampiezza(3));
-set(handles.Sph1_max, 'String', num2str(ampiezza(3), '%.1f'));
-set(handles.Sph1, 'Min',   ampiezza(1));
-set(handles.Sph1, 'Value', ampiezza(2));
-set(handles.Sph1, 'Max',   ampiezza(3));
+% set(handles.Sph1_min, 'Value',  ampiezza(1));
+% set(handles.Sph1_min, 'String', num2str(ampiezza(1), '%.1f'));
+% set(handles.Sph1_cur, 'Value',  ampiezza(2));
+% set(handles.Sph1_cur, 'String', num2str(ampiezza(2), '%.2f'));
+% set(handles.Sph1_max, 'Value',  ampiezza(3));
+% set(handles.Sph1_max, 'String', num2str(ampiezza(3), '%.1f'));
+% set(handles.Sph1, 'Min',   ampiezza(1));
+% set(handles.Sph1, 'Value', ampiezza(2));
+% set(handles.Sph1, 'Max',   ampiezza(3));
 
 % Leggo i dati inseriti dall'utente
 Sph1 = get(handles.Sph1, 'Value');
@@ -1636,8 +1664,9 @@ A2 = get(handles.A2, 'Value');
 rho = get(handles.rho, 'Value');
 R1 = get(handles.R1, 'Value');
 R2 = get(handles.R2, 'Value');
+Spe = get(handles.Spe, 'Value');
 g = 9.81;
-u = Sph1;
+u = Spe;
 
 % Controllo sui dati nulli
 if R1 == 0, R1 = eps; end
@@ -1656,14 +1685,14 @@ G = [1/A1; 0];
 [x, stb] = PuntoEquilibrioLTI2(F, G, u);
 if isnan(stb)
   set(handles.Punto_Eq_txt, 'String', ...
-    {'Non esiste uno stato di equilibrio con l''ingresso: ';...
-    ['Phii = ', num2str(u(1), '%.2f'), ' m']});
+    {'Non esiste uno stato di equilibrio con in ingresso il set point: ';...
+    ['Spe = ', num2str(u(1), '%.2f'), ' m']});
   return
 end
 
 
 % Preparazione testo da visualizzare
-str = sprintf('In presenza dell''ingresso: Phii = %.1f m', u(1));
+str = sprintf('In presenza dell set point in ingresso: Spe = %.1f m', u(1));
 str1 = sprintf('\nlo stato:');
 str21 = sprintf('\n  h1 = %.1f m', x(1));
 str22 = sprintf('\n  h2 = %.1f m', x(2));
@@ -1760,7 +1789,8 @@ fclose('all');
 cd('..');
 
 % Aggiornamento degli slider
-global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld;
+global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld Spesld;
+
 set(handles.A1_min, 'Value',  A1_min);
 set(handles.A1_min, 'String', num2str(A1_min, '%.1f'));
 set(handles.A1_cur, 'Value',  A1_cur);
@@ -1900,31 +1930,46 @@ set(handles.Sph2_max, 'String', num2str(Sph2_max, '%.1f'));
 
 set(handles.Sph2, 'Min',   Sph2_min);
 set(handles.Sph2, 'Value', Sph2_cur);
-set(handles.h20, 'Max',   Sph2_max);
+set(handles.Sph2, 'Max',   Sph2_max);
 majorstep = Sph2sld.stmax / (Sph2_max-Sph2_min);
 minorstep = Sph2sld.stmin / (Sph2_max-Sph2_min);
 set(handles.Sph2, 'SliderStep', [minorstep majorstep]);
 
 
-% ingressi
-IngressoParstr = cell(1);
-IngressoParstr{1} = 'Ampiezza [m]';
-set(handles.IngressoPar, 'Enable', 'on');
-switch IngressoTipo
-  case {1, 2}
-      set(handles.IngressoPar, 'Enable', 'off');
-  case 3
-      IngressoParstr{2} = 'Frequenza [Hz]';
-  case 5
-      IngressoParstr{2} = 'Frequenza [Hz]';
-      IngressoParstr{3} = 'Duty Cycle [%]';
-  case {4, 6}
-      IngressoParstr{2} = 'Frequenza [Hz]';
-end
+set(handles.Spe_min, 'Value',  Spe_min);
+set(handles.Spe_min, 'String', num2str(Spe_min, '%.1f'));
+set(handles.Spe_cur, 'Value',  Spe_cur);
+set(handles.Spe_cur, 'String', num2str(Spe_cur, '%.2f'));
+set(handles.Spe_max, 'Value',  Spe_max);
+set(handles.Spe_max, 'String', num2str(Spe_max, '%.1f'));
 
-set(handles.IngressoPar,  'String', IngressoParstr);
-set(handles.IngressoTipo, 'Value',  IngressoTipo);
-set(handles.IngressoPar,  'Value',  IngressoPar);
+set(handles.Spe, 'Min',   Spe_min);
+set(handles.Spe, 'Value', Spe_cur);
+set(handles.Spe, 'Max',   Spe_max);
+majorstep = Spesld.stmax / (Spe_max-Spe_min);
+minorstep = Spesld.stmin / (Spe_max-Spe_min);
+set(handles.Spe, 'SliderStep', [minorstep majorstep]);
+
+
+% ingressi
+% IngressoParstr = cell(1);
+% IngressoParstr{1} = 'Ampiezza [m]';
+% set(handles.IngressoPar, 'Enable', 'on');
+% switch IngressoTipo
+%   case {1, 2}
+%       set(handles.IngressoPar, 'Enable', 'off');
+%   case 3
+%       IngressoParstr{2} = 'Frequenza [Hz]';
+%   case 5
+%       IngressoParstr{2} = 'Frequenza [Hz]';
+%       IngressoParstr{3} = 'Duty Cycle [%]';
+%   case {4, 6}
+%       IngressoParstr{2} = 'Frequenza [Hz]';
+% end
+% 
+% set(handles.IngressoPar,  'String', IngressoParstr);
+% set(handles.IngressoTipo, 'Value',  IngressoTipo);
+% set(handles.IngressoPar,  'Value',  IngressoPar);
 
 set(handles.Sph1_min, 'Value',  Sph1_min);
 set(handles.Sph1_min, 'String', num2str(Sph1_min, '%.1f'));
@@ -1936,8 +1981,8 @@ set(handles.Sph1_max, 'String', num2str(Sph1_max, '%.1f'));
 set(handles.Sph1, 'Min',   Sph1_min);
 set(handles.Sph1, 'Value', Sph1_cur);
 set(handles.Sph1, 'Max',   Sph1_max);
-majorstep = Rsld.stmax / (Sph1_max-Sph1_min);
-minorstep = Rsld.stmin / (Sph1_max-Sph1_min);
+majorstep = Sph1sld.stmax / (Sph1_max-Sph1_min);
+minorstep = Sph1sld.stmin / (Sph1_max-Sph1_min);
 set(handles.Sph1, 'SliderStep', [minorstep majorstep]);
 
 set(handles.Uscita, 'Value', Uscita);
@@ -2009,12 +2054,21 @@ R2_cur = get(handles.R2_cur, 'Value');
 R2_max = get(handles.R2_max, 'Value');
 
 % pannello ingressi
-IngressoTipo = get(handles.IngressoTipo, 'Value');
-IngressoPar = get(handles.IngressoPar, 'Value');
+% IngressoTipo = get(handles.IngressoTipo, 'Value');
+% IngressoPar = get(handles.IngressoPar, 'Value');
 
 Sph1_min = get(handles.Sph1_min, 'Value');
 Sph1_cur = get(handles.Sph1_cur, 'Value');
 Sph1_max = get(handles.Sph1_max, 'Value');
+
+Sph2_min = get(handles.Sph2_min, 'Value');
+Sph2_cur = get(handles.Sph2_cur, 'Value');
+Sph2_max = get(handles.Sph2_max, 'Value');
+
+Spe_min = get(handles.Spe_min, 'Value');
+Spe_cur = get(handles.Spe_cur, 'Value');
+Spe_max = get(handles.Spe_max, 'Value');
+
 
 % pannello stato iniziale
 h10_min = get(handles.h10_min, 'Value');
@@ -2034,17 +2088,13 @@ Mur2_min = get(handles.Mur2_min, 'Value');
 Mur2_cur = get(handles.Mur2_cur, 'Value');
 Mur2_max = get(handles.Mur2_max, 'Value');
 
-Sph2_min = get(handles.Sph2_min, 'Value');
-Sph2_cur = get(handles.Sph2_cur, 'Value');
-Sph2_max = get(handles.Sph2_max, 'Value');
-
 
 Uscita = get(handles.Uscita, 'Value');
 
 % Salvataggio parametri su file
 fid = fopen(namem, 'w');
-fprintf(fid, 'IngressoTipo = %f;\n', IngressoTipo);
-fprintf(fid, 'IngressoPar = %f;\n', IngressoPar);
+% fprintf(fid, 'IngressoTipo = %f;\n', IngressoTipo);
+% fprintf(fid, 'IngressoPar = %f;\n', IngressoPar);
 fprintf(fid, 'Uscita = %f;\n', Uscita);
 
 fprintf(fid, 'Sph1_min = %f;\n', Sph1_min);
@@ -2090,6 +2140,10 @@ fprintf(fid, 'Mur2_max = %f;\n', Mur2_max);
 fprintf(fid, 'Sph2_min = %f;\n', Sph2_min);
 fprintf(fid, 'Sph2_cur = %f;\n', Sph2_cur);
 fprintf(fid, 'Sph2_max = %f;\n', Sph2_max);
+
+fprintf(fid, 'Spe_min = %f;\n', Spe_min);
+fprintf(fid, 'Spe_cur = %f;\n', Spe_cur);
+fprintf(fid, 'Spe_max = %f;\n', Spe_max);
 
 fclose(fid);
 fclose('all');
@@ -2505,4 +2559,103 @@ function Mur1_max_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
+
+
+function Spe_min_Callback(hObject, eventdata, handles)
+% hObject    handle to Spe_min (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global Spesld;
+Slider_min_Callback(handles, handles.Spe, handles.Spe_min, handles.Spe_cur, handles.Spe_max, Spesld.stmin, Spesld.stmax, Spesld.Llim, Spesld.Hlim);
+
+% Hints: get(hObject,'String') returns contents of Spe_min as text
+%        str2double(get(hObject,'String')) returns contents of Spe_min as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function Spe_min_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Spe_min (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function Spe_cur_Callback(hObject, eventdata, handles)
+% hObject    handle to Spe_cur (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global Spesld;
+Slider_cur_Callback(handles, handles.Spe, handles.Spe_min, handles.Spe_cur, handles.Spe_max, Spesld.stmin, Spesld.stmax, Spesld.Llim, Spesld.Hlim);
+
+% Hints: get(hObject,'String') returns contents of Spe_cur as text
+%        str2double(get(hObject,'String')) returns contents of Spe_cur as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function Spe_cur_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Spe_cur (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function Spe_max_Callback(hObject, eventdata, handles)
+% hObject    handle to Spe_max (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global Spesld;
+Slider_max_Callback(handles, handles.Spe, handles.Spe_min, handles.Spe_cur, handles.Spe_max, Spesld.stmin, Spesld.stmax, Spesld.Llim, Spesld.Hlim);
+
+% Hints: get(hObject,'String') returns contents of Spe_max as text
+%        str2double(get(hObject,'String')) returns contents of Spe_max as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function Spe_max_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Spe_max (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on slider movement.
+function Spe_Callback(hObject, eventdata, handles)
+% hObject    handle to Spe (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+Slider_sld_Callback(handles, handles.A1, handles.A1_cur);
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+% Reset testo punto di equilibrio
+set(handles.punto_eq_txt, 'String', '');
+
+
+% --- Executes during object creation, after setting all properties.
+function Spe_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Spe (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
