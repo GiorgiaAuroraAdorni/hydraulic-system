@@ -41,7 +41,7 @@ function varargout = Main(varargin)
 
 % Edit the above text to modify the response to help Main
 
-% Last Modified by GUIDE v2.5 13-Jun-2018 15:57:59
+% Last Modified by GUIDE v2.5 14-Jun-2018 18:47:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -114,18 +114,13 @@ def =[
       0        % Sph2_min  (34)
       5        % Sph2, Sph2_cur
       10       % Sph2_max
-      0        % Spe_min  (34)
-      5        % Spe, Spe_cur
-      10       % Spe_max
+      0        % Ie_min  (34)
+      5        % Ie, Ie_cur
+      10       % Ie_max
       ];
     
 % Par degli slider
-global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld Spesld;
-
-Sph1sld.stmin = 0.1;
-Sph1sld.stmax = 1;
-Sph1sld.Llim = eps;
-Sph1sld.Hlim = +Inf;
+global A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld Iesld;
 
 A1sld.stmin = 0.1;
 A1sld.stmax = 1;
@@ -177,10 +172,10 @@ Sph2sld.stmax = 1;
 Sph2sld.Llim = eps;
 Sph2sld.Hlim = +Inf;
 
-Spesld.stmin = 0.1;
-Spesld.stmax = 1;
-Spesld.Llim = eps;
-Spesld.Hlim = +Inf;
+Iesld.stmin = 0.1;
+Iesld.stmax = 1;
+Iesld.Llim = eps;
+Iesld.Hlim = +Inf;
 
 evalin('base', 'input_params = containers.Map();'); 
 
@@ -278,7 +273,6 @@ Uscita = 'SistemaIdraulico';
 
 
 % Leggo i dati inseriti dall'utente
-Sph1  = get(handles.Sph1, 'Value');
 A1   = get(handles.A1, 'Value');
 A2   = get(handles.A2, 'Value');
 rho = get(handles.rho, 'Value');
@@ -289,13 +283,15 @@ h20 = get(handles.h20, 'Value');
 Mur1 = get(handles.Mur1, 'Value');
 Mur2 = get(handles.Mur2, 'Value');
 Sph2 = get(handles.Sph2, 'Value');
-Spe = get(handles.Spe, 'Value');
+Ie = get(handles.Ie, 'Value');
+poli = get(handles.poli, 'String');
+poli = str2num(poli);
 g = 9.8;
 
 
 % Esporta tutte le variabili nel Workspace per permettere a1 Simulink
 % di averne visibilità
-vars = {'A1', A1; 'A2', A2; 'rho', rho; 'R1', R1; 'Sph1', Sph1; 'R2', R2; 'h10', h10; 'h20', h20; 'Mur1', Mur1; 'Mur2', Mur2; 'Sph2', Sph2; 'Spe', Spe};
+vars = {'A1', A1; 'A2', A2; 'rho', rho; 'R1', R1; 'R2', R2; 'h10', h10; 'h20', h20; 'Mur1', Mur1; 'Mur2', Mur2; 'Sph2', Sph2; 'Ie', Ie; 'poli', poli};
 for i = 1:size(vars, 1)
     name = vars(i, 1);
     value = vars(i, 2);
@@ -1264,133 +1260,12 @@ end
 % end
 
 
-%%
-% --- Executes on slider movement.
-function Sph1_Callback(hObject, eventdata, handles)
-% hObject    handle to Sph1 (see GCBO)
-% eventdata  reserved - to be defined in a1 future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-Slider_sld_Callback(handles, handles.Sph1, handles.Sph1_cur);
-
-val = get(handles.Sph1, 'Value');
-% parametri = get(handles.IngressoPar, 'String');
-% param_name = parametri{get(handles.IngressoPar, 'Value')};
-%values = evalin('base', ['input_params(''' param_name ''')']);
-values(2) = val;
-%evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
-
-% Past instruction:
-% evalin('base', ['input_param(' num2str(get(handles.IngressoPar, 'Value')) ') = ' num2str(get(hObject, 'Value')) ';']);
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-
-
-% --- Executes during object creation, after setting all properties.
-function Sph1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Sph1 (see GCBO)
-% eventdata  reserved - to be defined in a1 future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: slider controls usually have a1 light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
-end
-
-
-%%
-function Sph1_max_Callback(hObject, eventdata, handles)
-% hObject    handle to Sph1_max (see GCBO)
-% eventdata  reserved - to be defined in a1 future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-global Sph1sld;
-Slider_max_Callback(handles, handles.Sph1, handles.Sph1_min, handles.Sph1_cur, handles.Sph1_max, Sph1sld.stmin, Sph1sld.stmax, Sph1sld.Llim, Sph1sld.Hlim);
-
-% parametri = get(handles.IngressoPar, 'String');
-% param_name = parametri{get(handles.IngressoPar, 'Value')};
-% values = [get(handles.Sph1, 'Min') get(handles.Sph1, 'Value'), get(handles.Sph1, 'Max')];
-% evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
-
-% Hints: get(hObject,'String') returns contents of Sph1_max as text
-%        str2double(get(hObject,'String')) returns contents of Sph1_max as a1 double
-
-
-% --- Executes during object creation, after setting all properties.
-function Sph1_max_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Sph1_max (see GCBO)
-% eventdata  reserved - to be defined in a1 future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a1 white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-function Sph1_min_Callback(hObject, eventdata, handles)
-% hObject    handle to Sph1_min (see GCBO)
-% eventdata  reserved - to be defined in a1 future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-global Sph1sld;
-Slider_min_Callback(handles, handles.Sph1, handles.Sph1_min, handles.Sph1_cur, handles.Sph1_max, Sph1sld.stmin, Sph1sld.stmax, Sph1sld.Llim, Sph1sld.Hlim);
-% 
-% parametri = get(handles.IngressoPar, 'String');
-% param_name = parametri{get(handles.IngressoPar, 'Value')};
-% values = [get(handles.Sph1, 'Min') get(handles.Sph1, 'Value'), get(handles.Sph1, 'Max')];
-% evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
-% Hints: get(hObject,'String') returns contents of Sph1_min as text
-%        str2double(get(hObject,'String')) returns contents of Sph1_min as a1 double
-
-
-% --- Executes during object creation, after setting all properties.
-function Sph1_min_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Sph1_min (see GCBO)
-% eventdata  reserved - to be defined in a1 future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a1 white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-%%
-function Sph1_cur_Callback(hObject, eventdata, handles)
-% hObject    handle to Sph1_cur (see GCBO)
-% eventdata  reserved - to be defined in a1 future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-global Sph1sld;
-Slider_cur_Callback(handles, handles.Sph1, handles.Sph1_min, handles.Sph1_cur, handles.Sph1_max, Sph1sld.stmin, Sph1sld.stmax, Sph1sld.Llim, Sph1sld.Hlim);
-
-% 
-% parametri = get(handles.IngressoPar, 'String');
-% param_name = parametri{get(handles.IngressoPar, 'Value')}; 
-% values = [get(handles.Sph1, 'Min') get(handles.Sph1, 'Value'), get(handles.Sph1, 'Max')];
-% evalin('base', ['input_params(''' param_name ''') = ' mat2str(values) ';']);
-% Hints: get(hObject,'String') returns contents of Sph1_cur as text
-%        str2double(get(hObject,'String')) returns contents of Sph1_cur as a1 double
-
-
-% --- Executes during object creation, after setting all properties.
-function Sph1_cur_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Sph1_cur (see GCBO)
-% eventdata  reserved - to be defined in a1 future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a1 white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
 %% VALORI DI DEFAULT
 % 
 function Load_Defaults(handles)
 
 global def;
-global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld Spesld;
+global A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld Iesld;
 
 
 % ingressi
@@ -1423,26 +1298,26 @@ global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2
 set(handles.Uscita, 'Value', def(3)); 
 
 
-% slider Sph1
-set(handles.Sph1_min, 'Value', def(4));
-set(handles.Sph1_min, 'String', num2str(def(4),  '%.1f')); 
-set(handles.Sph1_cur, 'Value', def(5));
-set(handles.Sph1_cur, 'String', num2str(def(5), '%.2f')); 
-set(handles.Sph1_max, 'Value', def(6));
-set(handles.Sph1_max, 'String', num2str(def(6), '%.1f'));
-
-set(handles.Sph1, 'Min',   def(4)); 
-set(handles.Sph1, 'Value', def(5));
-set(handles.Sph1, 'Max',   def(6)); 
-majorstep = Sph1sld.stmax / (def(6)-def(4));
-minorstep = Sph1sld.stmin / (def(6)-def(4));
-set(handles.Sph1, 'SliderStep', [minorstep majorstep]);
-
-vect = mat2str([get(handles.Sph1, 'Min') get(handles.Sph1, 'Value') get(handles.Sph1, 'Max')]);
-evalin('base', ['input_params(''Ampiezza [m]'') = ' vect ';']);
-evalin('base', 'input_params(''Frequenza [Hz]'') = [0 100 10000];'); % Frequenza dei segnali periodici tranne il treno di impulsi
-evalin('base', 'input_params(''Frequenza [Hz]'') = [0 100 500];');   % Frequenza del treno di impulsi
-evalin('base', 'input_params(''Duty Cycle [%]'') = [0 50 100];');
+% % slider Sph2
+% set(handles.Sph2_min, 'Value', def(4));
+% set(handles.Sph2_min, 'String', num2str(def(4),  '%.1f')); 
+% set(handles.Sph2_cur, 'Value', def(5));
+% set(handles.Sph2_cur, 'String', num2str(def(5), '%.2f')); 
+% set(handles.Sph2_max, 'Value', def(6));
+% set(handles.Sph2_max, 'String', num2str(def(6), '%.1f'));
+% 
+% set(handles.Sph2, 'Min',   def(4)); 
+% set(handles.Sph2, 'Value', def(5));
+% set(handles.Sph2, 'Max',   def(6)); 
+% majorstep = Sph2sld.stmax / (def(6)-def(4));
+% minorstep = Sph2sld.stmin / (def(6)-def(4));
+% set(handles.Sph2, 'SliderStep', [minorstep majorstep]);
+% 
+% vect = mat2str([get(handles.Sph2, 'Min') get(handles.Sph2, 'Value') get(handles.Sph2, 'Max')]);
+% evalin('base', ['input_params(''Ampiezza [m]'') = ' vect ';']);
+% evalin('base', 'input_params(''Frequenza [Hz]'') = [0 100 10000];'); % Frequenza dei segnali periodici tranne il treno di impulsi
+% evalin('base', 'input_params(''Frequenza [Hz]'') = [0 100 500];');   % Frequenza del treno di impulsi
+% evalin('base', 'input_params(''Duty Cycle [%]'') = [0 50 100];');
 
 
 % slider A1
@@ -1597,19 +1472,19 @@ majorstep = Sph2sld.stmax / (def(36)-def(34));
 minorstep = Sph2sld.stmin / (def(36)-def(34));
 set(handles.Sph2, 'SliderStep', [minorstep majorstep]);
 
-% slider Spe
-set(handles.Spe_min, 'Value', def(37));
-set(handles.Spe_min, 'String', num2str(def(37), '%.1f'));
-set(handles.Spe_cur, 'Value', def(38));
-set(handles.Spe_cur, 'String', num2str(def(38), '%.2f'));
-set(handles.Spe_max, 'Value', def(39));
-set(handles.Spe_max, 'String', num2str(def(39), '%.1f'));
+% slider Ie
+set(handles.Ie_min, 'Value', def(37));
+set(handles.Ie_min, 'String', num2str(def(37), '%.1f'));
+set(handles.Ie_cur, 'Value', def(38));
+set(handles.Ie_cur, 'String', num2str(def(38), '%.2f'));
+set(handles.Ie_max, 'Value', def(39));
+set(handles.Ie_max, 'String', num2str(def(39), '%.1f'));
 
-set(handles.Spe, 'Min',   def(37)); 
-set(handles.Spe, 'Value', def(38));
+set(handles.Ie, 'Min',   def(37)); 
+set(handles.Ie, 'Value', def(38));
 set(handles.Sph2, 'Max',   def(39)); 
-majorstep = Spesld.stmax / (def(39)-def(37));
-minorstep = Spesld.stmin / (def(39)-def(37));
+majorstep = Iesld.stmax / (def(39)-def(37));
+minorstep = Iesld.stmin / (def(39)-def(37));
 set(handles.Sph2, 'SliderStep', [minorstep majorstep]);
 
 set(handles.ConfigSaveName, 'String', 'nomefile');
@@ -1641,7 +1516,7 @@ function Punto_eq_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 clc
 
-% ampiezza = evalin('base', 'input_params(''Set point equilibrio Spe [m]'')');
+% ampiezza = evalin('base', 'input_params(''Set point equilibrio Ie [m]'')');
 
 % set(handles.IngressoTipo,'Value',1);
 % set(handles.IngressoPar, 'Value', 1);
@@ -1658,15 +1533,14 @@ clc
 % set(handles.Sph1, 'Max',   ampiezza(3));
 
 % Leggo i dati inseriti dall'utente
-Sph1 = get(handles.Sph1, 'Value');
 A1 = get(handles.A1, 'Value');
 A2 = get(handles.A2, 'Value');
 rho = get(handles.rho, 'Value');
 R1 = get(handles.R1, 'Value');
 R2 = get(handles.R2, 'Value');
-Spe = get(handles.Spe, 'Value');
+Ie = get(handles.Ie, 'Value');
 g = 9.81;
-u = Spe;
+u = Ie;
 
 % Controllo sui dati nulli
 if R1 == 0, R1 = eps; end
@@ -1686,13 +1560,13 @@ G = [1/A1; 0];
 if isnan(stb)
   set(handles.Punto_Eq_txt, 'String', ...
     {'Non esiste uno stato di equilibrio con in ingresso il set point: ';...
-    ['Spe = ', num2str(u(1), '%.2f'), ' m']});
+    ['Ie = ', num2str(u(1), '%.2f'), ' m']});
   return
 end
 
 
 % Preparazione testo da visualizzare
-str = sprintf('In presenza dell set point in ingresso: Spe = %.1f m', u(1));
+str = sprintf('In presenza dell set point in ingresso: Ie = %.1f m', u(1));
 str1 = sprintf('\nlo stato:');
 str21 = sprintf('\n  h1 = %.1f m', x(1));
 str22 = sprintf('\n  h2 = %.1f m', x(2));
@@ -1789,7 +1663,7 @@ fclose('all');
 cd('..');
 
 % Aggiornamento degli slider
-global Sph1sld A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld Spesld;
+global A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld Iesld;
 
 set(handles.A1_min, 'Value',  A1_min);
 set(handles.A1_min, 'String', num2str(A1_min, '%.1f'));
@@ -1936,19 +1810,19 @@ minorstep = Sph2sld.stmin / (Sph2_max-Sph2_min);
 set(handles.Sph2, 'SliderStep', [minorstep majorstep]);
 
 
-set(handles.Spe_min, 'Value',  Spe_min);
-set(handles.Spe_min, 'String', num2str(Spe_min, '%.1f'));
-set(handles.Spe_cur, 'Value',  Spe_cur);
-set(handles.Spe_cur, 'String', num2str(Spe_cur, '%.2f'));
-set(handles.Spe_max, 'Value',  Spe_max);
-set(handles.Spe_max, 'String', num2str(Spe_max, '%.1f'));
+set(handles.Ie_min, 'Value',  Ie_min);
+set(handles.Ie_min, 'String', num2str(Ie_min, '%.1f'));
+set(handles.Ie_cur, 'Value',  Ie_cur);
+set(handles.Ie_cur, 'String', num2str(Ie_cur, '%.2f'));
+set(handles.Ie_max, 'Value',  Ie_max);
+set(handles.Ie_max, 'String', num2str(Ie_max, '%.1f'));
 
-set(handles.Spe, 'Min',   Spe_min);
-set(handles.Spe, 'Value', Spe_cur);
-set(handles.Spe, 'Max',   Spe_max);
-majorstep = Spesld.stmax / (Spe_max-Spe_min);
-minorstep = Spesld.stmin / (Spe_max-Spe_min);
-set(handles.Spe, 'SliderStep', [minorstep majorstep]);
+set(handles.Ie, 'Min',   Ie_min);
+set(handles.Ie, 'Value', Ie_cur);
+set(handles.Ie, 'Max',   Ie_max);
+majorstep = Iesld.stmax / (Ie_max-Ie_min);
+minorstep = Iesld.stmin / (Ie_max-Ie_min);
+set(handles.Ie, 'SliderStep', [minorstep majorstep]);
 
 
 % ingressi
@@ -1970,20 +1844,6 @@ set(handles.Spe, 'SliderStep', [minorstep majorstep]);
 % set(handles.IngressoPar,  'String', IngressoParstr);
 % set(handles.IngressoTipo, 'Value',  IngressoTipo);
 % set(handles.IngressoPar,  'Value',  IngressoPar);
-
-set(handles.Sph1_min, 'Value',  Sph1_min);
-set(handles.Sph1_min, 'String', num2str(Sph1_min, '%.1f'));
-set(handles.Sph1_cur, 'Value',  Sph1_cur);
-set(handles.Sph1_cur, 'String', num2str(Sph1_cur, '%.2f'));
-set(handles.Sph1_max, 'Value',  Sph1_max);
-set(handles.Sph1_max, 'String', num2str(Sph1_max, '%.1f'));
-
-set(handles.Sph1, 'Min',   Sph1_min);
-set(handles.Sph1, 'Value', Sph1_cur);
-set(handles.Sph1, 'Max',   Sph1_max);
-majorstep = Sph1sld.stmax / (Sph1_max-Sph1_min);
-minorstep = Sph1sld.stmin / (Sph1_max-Sph1_min);
-set(handles.Sph1, 'SliderStep', [minorstep majorstep]);
 
 set(handles.Uscita, 'Value', Uscita);
 
@@ -2057,17 +1917,13 @@ R2_max = get(handles.R2_max, 'Value');
 % IngressoTipo = get(handles.IngressoTipo, 'Value');
 % IngressoPar = get(handles.IngressoPar, 'Value');
 
-Sph1_min = get(handles.Sph1_min, 'Value');
-Sph1_cur = get(handles.Sph1_cur, 'Value');
-Sph1_max = get(handles.Sph1_max, 'Value');
-
 Sph2_min = get(handles.Sph2_min, 'Value');
 Sph2_cur = get(handles.Sph2_cur, 'Value');
 Sph2_max = get(handles.Sph2_max, 'Value');
 
-Spe_min = get(handles.Spe_min, 'Value');
-Spe_cur = get(handles.Spe_cur, 'Value');
-Spe_max = get(handles.Spe_max, 'Value');
+Ie_min = get(handles.Ie_min, 'Value');
+Ie_cur = get(handles.Ie_cur, 'Value');
+Ie_max = get(handles.Ie_max, 'Value');
 
 
 % pannello stato iniziale
@@ -2096,10 +1952,6 @@ fid = fopen(namem, 'w');
 % fprintf(fid, 'IngressoTipo = %f;\n', IngressoTipo);
 % fprintf(fid, 'IngressoPar = %f;\n', IngressoPar);
 fprintf(fid, 'Uscita = %f;\n', Uscita);
-
-fprintf(fid, 'Sph1_min = %f;\n', Sph1_min);
-fprintf(fid, 'Sph1_cur = %f;\n', Sph1_cur);
-fprintf(fid, 'Sph1_max = %f;\n', Sph1_max);
 
 fprintf(fid, 'A1_min = %f;\n', A1_min);
 fprintf(fid, 'A1_cur = %f;\n', A1_cur);
@@ -2141,9 +1993,9 @@ fprintf(fid, 'Sph2_min = %f;\n', Sph2_min);
 fprintf(fid, 'Sph2_cur = %f;\n', Sph2_cur);
 fprintf(fid, 'Sph2_max = %f;\n', Sph2_max);
 
-fprintf(fid, 'Spe_min = %f;\n', Spe_min);
-fprintf(fid, 'Spe_cur = %f;\n', Spe_cur);
-fprintf(fid, 'Spe_max = %f;\n', Spe_max);
+fprintf(fid, 'Ie_min = %f;\n', Ie_min);
+fprintf(fid, 'Ie_cur = %f;\n', Ie_cur);
+fprintf(fid, 'Ie_max = %f;\n', Ie_max);
 
 fclose(fid);
 fclose('all');
@@ -2563,20 +2415,20 @@ end
 
 
 
-function Spe_min_Callback(hObject, eventdata, handles)
-% hObject    handle to Spe_min (see GCBO)
+function Ie_min_Callback(hObject, eventdata, handles)
+% hObject    handle to Ie_min (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Spesld;
-Slider_min_Callback(handles, handles.Spe, handles.Spe_min, handles.Spe_cur, handles.Spe_max, Spesld.stmin, Spesld.stmax, Spesld.Llim, Spesld.Hlim);
+global Iesld;
+Slider_min_Callback(handles, handles.Ie, handles.Ie_min, handles.Ie_cur, handles.Ie_max, Iesld.stmin, Iesld.stmax, Iesld.Llim, Iesld.Hlim);
 
-% Hints: get(hObject,'String') returns contents of Spe_min as text
-%        str2double(get(hObject,'String')) returns contents of Spe_min as a double
+% Hints: get(hObject,'String') returns contents of Ie_min as text
+%        str2double(get(hObject,'String')) returns contents of Ie_min as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function Spe_min_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Spe_min (see GCBO)
+function Ie_min_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Ie_min (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2588,20 +2440,20 @@ end
 
 
 
-function Spe_cur_Callback(hObject, eventdata, handles)
-% hObject    handle to Spe_cur (see GCBO)
+function Ie_cur_Callback(hObject, eventdata, handles)
+% hObject    handle to Ie_cur (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Spesld;
-Slider_cur_Callback(handles, handles.Spe, handles.Spe_min, handles.Spe_cur, handles.Spe_max, Spesld.stmin, Spesld.stmax, Spesld.Llim, Spesld.Hlim);
+global Iesld;
+Slider_cur_Callback(handles, handles.Ie, handles.Ie_min, handles.Ie_cur, handles.Ie_max, Iesld.stmin, Iesld.stmax, Iesld.Llim, Iesld.Hlim);
 
-% Hints: get(hObject,'String') returns contents of Spe_cur as text
-%        str2double(get(hObject,'String')) returns contents of Spe_cur as a double
+% Hints: get(hObject,'String') returns contents of Ie_cur as text
+%        str2double(get(hObject,'String')) returns contents of Ie_cur as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function Spe_cur_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Spe_cur (see GCBO)
+function Ie_cur_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Ie_cur (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2613,20 +2465,20 @@ end
 
 
 
-function Spe_max_Callback(hObject, eventdata, handles)
-% hObject    handle to Spe_max (see GCBO)
+function Ie_max_Callback(hObject, eventdata, handles)
+% hObject    handle to Ie_max (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Spesld;
-Slider_max_Callback(handles, handles.Spe, handles.Spe_min, handles.Spe_cur, handles.Spe_max, Spesld.stmin, Spesld.stmax, Spesld.Llim, Spesld.Hlim);
+global Iesld;
+Slider_max_Callback(handles, handles.Ie, handles.Ie_min, handles.Ie_cur, handles.Ie_max, Iesld.stmin, Iesld.stmax, Iesld.Llim, Iesld.Hlim);
 
-% Hints: get(hObject,'String') returns contents of Spe_max as text
-%        str2double(get(hObject,'String')) returns contents of Spe_max as a double
+% Hints: get(hObject,'String') returns contents of Ie_max as text
+%        str2double(get(hObject,'String')) returns contents of Ie_max as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function Spe_max_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Spe_max (see GCBO)
+function Ie_max_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Ie_max (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2638,11 +2490,11 @@ end
 
 
 % --- Executes on slider movement.
-function Spe_Callback(hObject, eventdata, handles)
-% hObject    handle to Spe (see GCBO)
+function Ie_Callback(hObject, eventdata, handles)
+% hObject    handle to Ie (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-Slider_sld_Callback(handles, handles.A1, handles.A1_cur);
+Slider_sld_Callback(handles, handles.Ie, handles.Ie_cur);
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 % Reset testo punto di equilibrio
@@ -2650,12 +2502,219 @@ set(handles.punto_eq_txt, 'String', '');
 
 
 % --- Executes during object creation, after setting all properties.
-function Spe_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Spe (see GCBO)
+function Ie_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Ie (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: slider controls usually have a light gray background.
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+
+function edit60_Callback(hObject, eventdata, handles)
+% hObject    handle to edit60 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit60 as text
+%        str2double(get(hObject,'String')) returns contents of edit60 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit60_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit60 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit59_Callback(hObject, eventdata, handles)
+% hObject    handle to edit59 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit59 as text
+%        str2double(get(hObject,'String')) returns contents of edit59 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit59_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit59 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit58_Callback(hObject, eventdata, handles)
+% hObject    handle to edit58 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit58 as text
+%        str2double(get(hObject,'String')) returns contents of edit58 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit58_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit58 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit57_Callback(hObject, eventdata, handles)
+% hObject    handle to edit57 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit57 as text
+%        str2double(get(hObject,'String')) returns contents of edit57 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit57_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit57 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit56_Callback(hObject, eventdata, handles)
+% hObject    handle to edit56 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit56 as text
+%        str2double(get(hObject,'String')) returns contents of edit56 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit56_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit56 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit55_Callback(hObject, eventdata, handles)
+% hObject    handle to edit55 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit55 as text
+%        str2double(get(hObject,'String')) returns contents of edit55 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit55_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit55 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit54_Callback(hObject, eventdata, handles)
+% hObject    handle to edit54 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit54 as text
+%        str2double(get(hObject,'String')) returns contents of edit54 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit54_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit54 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit52_Callback(hObject, eventdata, handles)
+% hObject    handle to edit52 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit52 as text
+%        str2double(get(hObject,'String')) returns contents of edit52 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit52_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit52 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function poli_Callback(hObject, eventdata, handles)
+% hObject    handle to poli (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of poli as text
+%        str2double(get(hObject,'String')) returns contents of poli as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function poli_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to poli (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
