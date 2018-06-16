@@ -3,10 +3,11 @@
 %                               (liquidi)                                 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% by Alberto Margari (2011)
-% by Barbara Bertani (2015)
+% by Alberto Margari  (2011)
+% by Barbara Bertani  (2015)
 % by Fabio Bernardini (2016)
-% by F. M. Marchese (2011-17)
+% by Giorgia Adorni   (2018)
+% by F. M. Marchese   (2011-18)
 %
 % Tested with ver. MatLab Rl2013b
 %
@@ -41,7 +42,7 @@ function varargout = Main(varargin)
 
 % Edit the above text to modify the response to help Main
 
-% Last Modified by GUIDE v2.5 14-Jun-2018 18:47:22
+% Last Modified by GUIDE v2.5 16-Jun-2018 16:41:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -78,46 +79,49 @@ Sistemi = 'Sistemi/*.m';
 % Impostazioni di default
 global def;
 def =[
-      1        % IngressoTipo
-      1        % IngressoPar
       1        % Uscita
-      0        % Sph1_min   (4)
-      5        % Sph1, Sph1_cur
-      10       % Sph1_max
-      0        % A1_min
+      0        % A1_min    (2)
       2        % A1, A1_cur
       10       % A1_max
-      0        % A2_min
+      0        % A2_min    (5)
       2        % A2, A2_cur
       10       % A2_max
-      900      % rho_min  (13)
+      900      % rho_min   (8)
       1000     % rho, rho_cur
       1100     % rho_max
-      0        % R1_min  
+      0        % R1_min    (11)
       500      % R1, R1_cur
       1000     % R1_max
-      0        % R2_min  (19)
+      0        % R2_min    (14)
       500      % R2, R2_cur
       1000     % R2_max
-      0        % h10_min (22)
+      0        % h10_min   (17)
       0        % h10, h10_cur
       10       % h10_max
-      0        % h20_min  (25)
+      0        % h20_min   (20)
       0        % h20, h20_cur
       10       % h20_max
-      0        % Mur1_min  (28)
-      15       % Mur1, Mur1_cur
-      80      % Mur1_max
-      0        % Mur2_min (31)
-      20       % Mur2, Mur2_cur
-      100      % Mur2_max
-      0        % Sph2_min  (34)
+      0        % Mur1_min  (23)
+      25       % Mur1, Mur1_cur
+      50       % Mur1_max
+      0        % Mur2_min  (26)
+      15       % Mur2, Mur2_cur
+      50       % Mur2_max
+      0        % Sph2_min  (29)
       5        % Sph2, Sph2_cur
       10       % Sph2_max
-      0        % Ie_min  (34)
+      0        % Ie_min    (32)
       5        % Ie, Ie_cur
       10       % Ie_max
       ];
+  
+global def_string;
+def_string = {      
+              '0.1 -9'     % P1 
+              '0 -70'      % P2        
+              '-2 -10'     % Z1       
+              '-8'         % Z2     
+              };
     
 % Par degli slider
 global A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld Iesld;
@@ -256,22 +260,6 @@ bdclose(Uscita);
 % Leggo la variabile di Uscita del sistema (y)
 Uscita = 'SistemaIdraulico';
 
-% Carico i valori dei parametri dal Workspace
-% ampiezza = evalin('base', 'input_params(''Ampiezza [m]'')');
-% if get(handles.IngressoTipo, 'Value') == 3
-%     frequenza = evalin('base', 'input_params(''Frequenza [Hz]'')');
-% else
-%     frequenza = evalin('base', 'input_params(''Frequenza [Hz]'')');
-% end
-% dutycycle = evalin('base', 'input_params(''Duty Cycle [%]'')');
-
-% Controllo sui dati nulli
-% if frequenza == 0, frequenza = eps; end
-% if get(handles.IngressoTipo, 'Value') == 3, if frequenza == 1000, frequenza = 999.999; end, end
-% if dutycycle < 0.0001, dutycycle = 0.0001; end
-% if dutycycle == 100, dutycycle = 100-0.0001; end
-
-
 % Leggo i dati inseriti dall'utente
 A1   = get(handles.A1, 'Value');
 A2   = get(handles.A2, 'Value');
@@ -284,20 +272,24 @@ Mur1 = get(handles.Mur1, 'Value');
 Mur2 = get(handles.Mur2, 'Value');
 Sph2 = get(handles.Sph2, 'Value');
 Ie = get(handles.Ie, 'Value');
-poli = get(handles.poli, 'String');
-poli = str2num(poli);
+P1 = get(handles.P1, 'String');
+P1 = str2num(P1);
+P2 = get(handles.P2, 'String');
+P2 = str2num(P2);
+Z1 = get(handles.Z1, 'String');
+Z1 = str2num(Z1);
+Z2 = get(handles.Z2, 'String');
+Z2 = str2num(Z2);
 g = 9.8;
-
 
 % Esporta tutte le variabili nel Workspace per permettere a1 Simulink
 % di averne visibilità
-vars = {'A1', A1; 'A2', A2; 'rho', rho; 'R1', R1; 'R2', R2; 'h10', h10; 'h20', h20; 'Mur1', Mur1; 'Mur2', Mur2; 'Sph2', Sph2; 'Ie', Ie; 'poli', poli};
+vars = {'A1', A1; 'A2', A2; 'rho', rho; 'R1', R1; 'R2', R2; 'h10', h10; 'h20', h20; 'Mur1', Mur1; 'Mur2', Mur2; 'Sph2', Sph2; 'Ie', Ie; 'P1', P1; 'P2', P2; 'Z1', Z1; 'Z2', Z2};
 for i = 1:size(vars, 1)
     name = vars(i, 1);
     value = vars(i, 2);
     assignin('base', name{1}, value{1}); 
 end
-
 
 % Calcolo costanti di tempo
 F = [-rho*g/(R1*A1),  rho*g/(R1*A1);
@@ -307,81 +299,12 @@ Tau = TimeConstantLTI(F);
 if isnan(Tau), Tau = 0.1; end
 Tau = min(1, Tau);  % sogliatura per evitare sim troppo lunghe
 
-
 % Apre il sistema da simulare
 open_system(Uscita);
 
-
-% % Impostazione del segnale in input al sistema
-% h = find_system(Uscita, 'Name', 'input');
-% if size(h) == [1, 1]
-%   system_blocks = find_system(Uscita);
-%   if numel(find(strcmp(system_blocks, [Uscita '/step1']))) > 0
-%     delete_line(Uscita, 'step1/1', 'input/1');
-%     delete_block([Uscita, '/step1']);
-%   end
-%   if numel(find(strcmp(system_blocks, [Uscita '/step2']))) > 0
-%     delete_line(Uscita, 'step2/1', 'input/2');
-%     delete_block([Uscita, '/step2']);  
-%   end
-%   if numel(find(strcmp(system_blocks, [Uscita '/input']))) > 0
-%     delete_line(Uscita, 'input/1', 'Gain/1');
-%     delete_block([Uscita, '/input']);
-%   end
-% end
-
-
-% % Legge qual'è il nuovo segnale in iNput da simulare
-% val = get(handles.IngressoTipo, 'Value');
-% switch val
-%   case 1  % step
-%       add_block('simulink/Sources/Step', [Uscita, '/input'], 'Time', num2str(0.5*Tau));
-%   case 2  % impulso
-%       add_block('simulink/Sources/Step', [Uscita, '/step1'], 'Time', num2str(0.5*Tau));
-%       add_block('simulink/Sources/Step', [Uscita, '/step2'], 'Time', num2str(0.5*Tau+min(0.25*Tau, 0.01)));
-%       add_block('simulink/Math Operations/Sum', [Uscita, '/input'], 'Inputs', '+-');
-%   case 3  % treno impulsi
-%       add_block('simulink/Sources/Pulse Generator', [Uscita, '/input'], 'Period', num2str(1/frequenza(2)), 'PulseWidth', num2str(frequenza(2)*0.1));
-%   case 4  % sinusoide
-%       add_block('simulink/Sources/Sine Wave', [Uscita, '/input'], 'Frequency', num2str(2*pi*frequenza(2)));
-%   case 5  % onda quadra
-%       add_block('simulink/Sources/Pulse Generator', [Uscita, '/input'], 'Period', num2str(1/frequenza(2)), 'PulseWidth', num2str(dutycycle(2)));
-%   case 6  % onda dente di sega
-%       add_block('simulink/Sources/Repeating Sequence', [Uscita, '/input'], 'rep_seq_t', ['[0 ' num2str(1/frequenza(2)) ']'], 'rep_seq_y', '[0 1]');
-% end;
-
-
 % Modifica della durata della simulazione
  set_param(Uscita, 'StopTime', num2str(5*Tau + 0.5*Tau));
- set_param(Uscita, 'StopTime', num2str(3));
-      
-%       
-% switch val
-%   case {1, 2}
-%       set_param(Uscita, 'StopTime', num2str(5*Tau + 0.5*Tau));
-%   case {3, 4, 5, 6}
-%       set_param(Uscita, 'StopTime', num2str(6/frequenza(2)));
-% end
-
-
-% Modifica dello sfondo e della posizione del blocco inserito
-% set_param([Uscita, '/input'], 'BackgroundColor', '[0, 206, 206]');
-% GainPos = get_param([Uscita, '/Gain'], 'Position');
-% avgGainh = (GainPos(2)+GainPos(4))/2;
-% if val ~= 2
-%   set_param([Uscita, '/input'], 'Position', ['[0,' num2str(avgGainh-15) ', 65,' num2str(avgGainh+15) ']']); % '[40, 90, 105, 120]');
-% else
-%   set_param([Uscita, '/step1'], 'BackgroundColor', '[0, 206, 206]');
-%   set_param([Uscita, '/step2'], 'BackgroundColor', '[0, 206, 206]');
-%   set_param([Uscita, '/step1'], 'Position', ['[0,' num2str(avgGainh-30-15) ', 65 ,' num2str(avgGainh-30+15) ']']);    % '[20, 45, 85, 75]');
-%   set_param([Uscita, '/step2'], 'Position', ['[0,' num2str(avgGainh+30-15) ', 65 ,' num2str(avgGainh+30+15)  ']']);  % '[20, 135, 85, 165]');
-%   set_param([Uscita, '/input'], 'Position', ['[75,' num2str(avgGainh-10) ', 95,' num2str(avgGainh+10) ']']); % '[95, 95, 115, 115]');
-%   add_line(Uscita, 'step1/1', 'input/1' , 'autorouting', 'on');
-%   add_line(Uscita, 'step2/1', 'input/2' , 'autorouting', 'on');
-% end
-
-% Nuovo collegamento con il blocco successivo (Gain)
-% add_line(Uscita, 'input/1', 'Gain/1' , 'autorouting', 'on');
+ set_param(Uscita, 'StopTime', num2str(6));
 
 % Salva il sistema
 save_system(Uscita);
@@ -1129,363 +1052,190 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-
-
-%% INGRESSI
-% --- Executes on selection change in IngressoTipo.
-% function IngressoTipo_Callback(hObject, eventdata, handles)
-% % hObject    handle to IngressoTipo (see GCBO)
-% % eventdata  reserved - to be defined in a1 future version of MATLAB
-% % handles    structure with handles and user data (see GUIDATA)
-% 
-% % Hints: contents = get(hObject,'String') returns IngressoTipo contents as cell array
-% %        contents{get(hObject,'Value')} returns selected item from IngressoTipo
-% 
-% % Segnala la modifica
-% global modified;
-% modified = true;
-% list = get(handles.ConfigLoadName, 'String');
-% index = get(handles.ConfigLoadName, 'Value');
-% name = [list{index}, '_'];
-% set(handles.ConfigSaveName, 'String', name);
-% 
-% 
-% id_ingresso = get(hObject, 'Value');
-% 
-% new_String = cell(1);
-% new_String{1} = 'Ampiezza [m]';
-% 
-% 
-% switch id_ingresso
-%   case {1, 2}
-%     set(handles.IngressoPar, 'Value', 1);
-%     set(handles.IngressoPar, 'Enable', 'off');
-%   case 3
-%     new_String{2} = 'Frequenza [Hz]'; 
-%     if get(handles.IngressoPar, 'Value') > 2
-%             set(handles.IngressoPar, 'Value', 2);
-%         end
-%         set(handles.IngressoPar, 'Enable', 'on');
-%   case 5
-%     new_String{2} = 'Frequenza [Hz]'; 
-%     new_String{3} = 'Duty Cycle [%]';  
-%     if get(handles.IngressoPar, 'Value') > 3
-%             set(handles.IngressoPar, 'Value', 3);
-%         end
-%         set(handles.IngressoPar, 'Enable', 'on');
-%     
-%   case {4, 6}
-%     new_String{2} = 'Frequenza [Hz]'; 
-%     if get(handles.IngressoPar, 'Value') > 2
-%             set(handles.IngressoPar, 'Value', 2);
-%         end
-%     set(handles.IngressoPar, 'Enable', 'on');
-% end
-% 
-% set(handles.IngressoPar, 'String', new_String);
-% set(handles.IngressoTipo, 'Value', id_ingresso);
-% set(handles.IngressoPar, 'Value', 1);
-% 
-% parametri = get(handles.IngressoPar, 'String');
-% param_name = parametri{get(handles.IngressoPar, 'Value')};
-% values = evalin('base', ['input_params(''' param_name ''')']);
-% 
-% set(handles.Sph1_min, 'Value',  values(1));
-% set(handles.Sph1_min, 'String', num2str(values(1), '%.1f'));
-% set(handles.Sph1_cur, 'Value',  values(2));
-% set(handles.Sph1_cur, 'String', num2str(values(2), '%.1f'));
-% set(handles.Sph1_max, 'Value',  values(3));
-% set(handles.Sph1_max, 'String', num2str(values(3), '%.1f'));
-% set(handles.Sph1, 'Min',   values(1));
-% set(handles.Sph1, 'Value', values(2));
-% set(handles.Sph1, 'Max',   values(3));
-% 
-% 
-% % --- Executes during object creation, after setting all properties.
-% function IngressoTipo_CreateFcn(hObject, eventdata, handles)
-% % hObject    handle to IngressoTipo (see GCBO)
-% % eventdata  reserved - to be defined in a1 future version of MATLAB
-% % handles    empty - handles not created until after all CreateFcns called
-% 
-% % Hint: popupmenu controls usually have a1 white background on Windows.
-% %       See ISPC and COMPUTER.
-% if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-%     set(hObject,'BackgroundColor','white');
-% end
-% 
-% 
-% % --- Executes on selection change in IngressoPar.
-% function IngressoPar_Callback(hObject, eventdata, handles)
-% % hObject    handle to IngressoPar (see GCBO)
-% % eventdata  reserved - to be defined in a future version of MATLAB
-% % handles    structure with handles and user data (see GUIDATA)
-% 
-% 
-% %Segnala la modifica
-% global modified;
-% modified = true;
-% list = get(handles.ConfigLoadName, 'String');
-% index = get(handles.ConfigLoadName, 'Value');
-% name = [list{index}, '_'];
-% set(handles.ConfigSaveName, 'String', name);
-% 
-% 
-% parametri = get(handles.IngressoPar, 'String');
-% param_name = parametri{get(handles.IngressoPar, 'Value')};
-% values = evalin('base', ['input_params(''' param_name ''')']);
-% 
-% set(handles.Sph1_min, 'Value',  values(1));
-% set(handles.Sph1_min, 'String', num2str(values(1), '%.1f'));
-% set(handles.Sph1_cur, 'Value',  values(2));
-% set(handles.Sph1_cur, 'String', num2str(values(2), '%.1f'));
-% set(handles.Sph1_max, 'Value',  values(3));
-% set(handles.Sph1_max, 'String', num2str(values(3), '%.1f'));
-% set(handles.Sph1, 'Min',   values(1));
-% set(handles.Sph1, 'Max',   values(3));
-% set(handles.Sph1, 'Value', values(2));
-% 
-% 
-% 
-% % --- Executes during object creation, after setting all properties.
-% function IngressoPar_CreateFcn(hObject, eventdata, handles)
-% % hObject    handle to IngressoPar (see GCBO)
-% % eventdata  reserved - to be defined in a future version of MATLAB
-% % handles    empty - handles not created until after all CreateFcns called
-% 
-% % Hint: popupmenu controls usually have a white background on Windows.
-% %       See ISPC and COMPUTER.
-% if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-%     set(hObject,'BackgroundColor','white');
-% end
-
-
 %% VALORI DI DEFAULT
 % 
 function Load_Defaults(handles)
 
 global def;
+global def_string;
 global A1sld A2sld rhosld R1sld R2sld h10sld h20sld Mur1sld Mur2sld Sph2sld Iesld;
 
-
-% ingressi
-% IngressoParstr = cell(1);
-% IngressoParstr{1} = 'Ampiezza [m]';
-% IngressoParval = get(handles.IngressoPar, 'Value');
-% set(handles.IngressoPar, 'Enable', 'on');
-% 
-% switch def(1)
-%   case {1, 2}
-%     set(handles.IngressoPar, 'Value', 1);
-%     set(handles.IngressoPar, 'Enable', 'off');
-%   case 3
-%     IngressoParstr{2} = 'Frequenza [Hz]';
-%     set(handles.IngressoPar, 'Value', 2);
-%   case 5
-%     IngressoParstr{2} = 'Frequenza [Hz]'; 
-%     IngressoParstr{3} = 'Duty Cycle [%]'; 
-%     set(handles.IngressoPar, 'Value', 3);
-%   case {4, 6}
-%     IngressoParstr{2} = 'Frequenza [Hz]'; 
-%     set(handles.IngressoPar, 'Value', 2);
-% end
-% 
-% set(handles.IngressoPar, 'String', IngressoParstr);
-% set(handles.IngressoTipo, 'Value', def(1));
-% set(handles.IngressoPar, 'Value', def(2));
-
-% Uscita
-set(handles.Uscita, 'Value', def(3)); 
-
-
-% % slider Sph2
-% set(handles.Sph2_min, 'Value', def(4));
-% set(handles.Sph2_min, 'String', num2str(def(4),  '%.1f')); 
-% set(handles.Sph2_cur, 'Value', def(5));
-% set(handles.Sph2_cur, 'String', num2str(def(5), '%.2f')); 
-% set(handles.Sph2_max, 'Value', def(6));
-% set(handles.Sph2_max, 'String', num2str(def(6), '%.1f'));
-% 
-% set(handles.Sph2, 'Min',   def(4)); 
-% set(handles.Sph2, 'Value', def(5));
-% set(handles.Sph2, 'Max',   def(6)); 
-% majorstep = Sph2sld.stmax / (def(6)-def(4));
-% minorstep = Sph2sld.stmin / (def(6)-def(4));
-% set(handles.Sph2, 'SliderStep', [minorstep majorstep]);
-% 
-% vect = mat2str([get(handles.Sph2, 'Min') get(handles.Sph2, 'Value') get(handles.Sph2, 'Max')]);
-% evalin('base', ['input_params(''Ampiezza [m]'') = ' vect ';']);
-% evalin('base', 'input_params(''Frequenza [Hz]'') = [0 100 10000];'); % Frequenza dei segnali periodici tranne il treno di impulsi
-% evalin('base', 'input_params(''Frequenza [Hz]'') = [0 100 500];');   % Frequenza del treno di impulsi
-% evalin('base', 'input_params(''Duty Cycle [%]'') = [0 50 100];');
-
-
 % slider A1
-set(handles.A1_min, 'Value', def(7));
-set(handles.A1_min, 'String', num2str(def(7),  '%.1f')); 
-set(handles.A1_cur, 'Value', def(8));
-set(handles.A1_cur, 'String', num2str(def(8), '%.2f')); 
-set(handles.A1_max, 'Value', def(9));
-set(handles.A1_max, 'String', num2str(def(9), '%.1f'));
+set(handles.A1_min, 'Value', def(2));
+set(handles.A1_min, 'String', num2str(def(2),  '%.1f')); 
+set(handles.A1_cur, 'Value', def(3));
+set(handles.A1_cur, 'String', num2str(def(3), '%.2f')); 
+set(handles.A1_max, 'Value', def(4));
+set(handles.A1_max, 'String', num2str(def(4), '%.1f'));
 
-set(handles.A1, 'Min',   def(7)); 
-set(handles.A1, 'Value', def(8));
-set(handles.A1, 'Max',   def(9)); 
-majorstep = A1sld.stmax / (def(9)-def(7));
-minorstep = A1sld.stmin / (def(9)-def(7));
+set(handles.A1, 'Min',   def(2)); 
+set(handles.A1, 'Value', def(3));
+set(handles.A1, 'Max',   def(4)); 
+majorstep = A1sld.stmax / (def(4)-def(2));
+minorstep = A1sld.stmin / (def(4)-def(2));
 set(handles.A1, 'SliderStep', [minorstep majorstep]);
 
 % slider A2
-set(handles.A2_min, 'Value', def(10));
-set(handles.A2_min, 'String', num2str(def(10),  '%.1f')); 
-set(handles.A2_cur, 'Value', def(11));
-set(handles.A2_cur, 'String', num2str(def(11), '%.2f')); 
-set(handles.A2_max, 'Value', def(12));
-set(handles.A2_max, 'String', num2str(def(12), '%.1f'));
+set(handles.A2_min, 'Value', def(5));
+set(handles.A2_min, 'String', num2str(def(5),  '%.1f')); 
+set(handles.A2_cur, 'Value', def(6));
+set(handles.A2_cur, 'String', num2str(def(6), '%.2f')); 
+set(handles.A2_max, 'Value', def(7));
+set(handles.A2_max, 'String', num2str(def(7), '%.1f'));
 
-set(handles.A2, 'Min',   def(10)); 
-set(handles.A2, 'Value', def(11));
-set(handles.A2, 'Max',   def(12)); 
-majorstep = A2sld.stmax / (def(12)-def(10));
-minorstep = A2sld.stmin / (def(12)-def(10));
+set(handles.A2, 'Min',   def(5)); 
+set(handles.A2, 'Value', def(6));
+set(handles.A2, 'Max',   def(7)); 
+majorstep = A2sld.stmax / (def(7)-def(5));
+minorstep = A2sld.stmin / (def(7)-def(5));
 set(handles.A2, 'SliderStep', [minorstep majorstep]);
 
 % slider rho
-set(handles.rho_min, 'Value', def(13));
-set(handles.rho_min, 'String', num2str(def(13), '%.1f'));
-set(handles.rho_cur, 'Value', def(14));
-set(handles.rho_cur, 'String', num2str(def(14), '%.2f'));
-set(handles.rho_max, 'Value', def(15));
-set(handles.rho_max, 'String', num2str(def(15), '%.1f'));
+set(handles.rho_min, 'Value', def(8));
+set(handles.rho_min, 'String', num2str(def(8), '%.1f'));
+set(handles.rho_cur, 'Value', def(9));
+set(handles.rho_cur, 'String', num2str(def(9), '%.2f'));
+set(handles.rho_max, 'Value', def(10));
+set(handles.rho_max, 'String', num2str(def(10), '%.1f'));
 
-set(handles.rho, 'Min',   def(13)); 
-set(handles.rho, 'Value', def(14));
-set(handles.rho, 'Max',   def(15)); 
-majorstep = rhosld.stmax / (def(15)-def(13));
-minorstep = rhosld.stmin / (def(15)-def(13));
+set(handles.rho, 'Min',   def(8)); 
+set(handles.rho, 'Value', def(9));
+set(handles.rho, 'Max',   def(10)); 
+majorstep = rhosld.stmax / (def(10)-def(8));
+minorstep = rhosld.stmin / (def(10)-def(8));
 set(handles.rho, 'SliderStep', [minorstep majorstep]);
 
-
 % slider R1
-set(handles.R1_min, 'Value', def(16));
-set(handles.R1_min, 'String', num2str(def(16), '%.1f'));
-set(handles.R1_cur, 'Value', def(17));
-set(handles.R1_cur, 'String', num2str(def(17), '%.2f'));
-set(handles.R1_max, 'Value', def(18));
-set(handles.R1_max, 'String', num2str(def(18), '%.1f'));
+set(handles.R1_min, 'Value', def(11));
+set(handles.R1_min, 'String', num2str(def(11), '%.1f'));
+set(handles.R1_cur, 'Value', def(12));
+set(handles.R1_cur, 'String', num2str(def(12), '%.2f'));
+set(handles.R1_max, 'Value', def(13));
+set(handles.R1_max, 'String', num2str(def(13), '%.1f'));
 
-set(handles.R1, 'Min',   def(16)); 
-set(handles.R1, 'Value', def(17));
-set(handles.R1, 'Max',   def(18)); 
-majorstep = R1sld.stmax / (def(18)-def(16));
-minorstep = R1sld.stmin / (def(18)-def(16));
+set(handles.R1, 'Min',   def(11)); 
+set(handles.R1, 'Value', def(12));
+set(handles.R1, 'Max',   def(13)); 
+majorstep = R1sld.stmax / (def(13)-def(11));
+minorstep = R1sld.stmin / (def(13)-def(11));
 set(handles.R1, 'SliderStep', [minorstep majorstep]);
 
 % slider R2
-set(handles.R2_min, 'Value', def(19));
-set(handles.R2_min, 'String', num2str(def(19), '%.1f'));
-set(handles.R2_cur, 'Value', def(20));
-set(handles.R2_cur, 'String', num2str(def(20), '%.2f'));
-set(handles.R2_max, 'Value', def(21));
-set(handles.R2_max, 'String', num2str(def(21), '%.1f'));
+set(handles.R2_min, 'Value', def(14));
+set(handles.R2_min, 'String', num2str(def(14), '%.1f'));
+set(handles.R2_cur, 'Value', def(15));
+set(handles.R2_cur, 'String', num2str(def(15), '%.2f'));
+set(handles.R2_max, 'Value', def(16));
+set(handles.R2_max, 'String', num2str(def(16), '%.1f'));
 
-set(handles.R2, 'Min',   def(19)); 
-set(handles.R2, 'Value', def(20));
-set(handles.R2, 'Max',   def(21)); 
-majorstep = R2sld.stmax / (def(21)-def(19));
-minorstep = R2sld.stmin / (def(21)-def(19));
+set(handles.R2, 'Min',   def(14)); 
+set(handles.R2, 'Value', def(15));
+set(handles.R2, 'Max',   def(16)); 
+majorstep = R2sld.stmax / (def(16)-def(14));
+minorstep = R2sld.stmin / (def(16)-def(14));
 set(handles.R2, 'SliderStep', [minorstep majorstep]);
 
 % slider h10
-set(handles.h10_min, 'Value', def(22));
-set(handles.h10_min, 'String', num2str(def(22), '%.1f'));
-set(handles.h10_cur, 'Value', def(23));
-set(handles.h10_cur, 'String', num2str(def(23), '%.2f'));
-set(handles.h10_max, 'Value', def(24));
-set(handles.h10_max, 'String', num2str(def(24), '%.1f'));
+set(handles.h10_min, 'Value', def(17));
+set(handles.h10_min, 'String', num2str(def(17), '%.1f'));
+set(handles.h10_cur, 'Value', def(18));
+set(handles.h10_cur, 'String', num2str(def(17), '%.2f'));
+set(handles.h10_max, 'Value', def(19));
+set(handles.h10_max, 'String', num2str(def(17), '%.1f'));
 
-set(handles.h10, 'Min',   def(22)); 
-set(handles.h10, 'Value', def(23));
-set(handles.h10, 'Max',   def(24)); 
-majorstep = h10sld.stmax / (def(24)-def(22));
-minorstep = h10sld.stmin / (def(24)-def(22));
+set(handles.h10, 'Min',   def(17)); 
+set(handles.h10, 'Value', def(18));
+set(handles.h10, 'Max',   def(19)); 
+majorstep = h10sld.stmax / (def(19)-def(17));
+minorstep = h10sld.stmin / (def(19)-def(17));
 set(handles.h10, 'SliderStep', [minorstep majorstep]);
 
-
 % slider h20
-set(handles.h20_min, 'Value', def(25));
-set(handles.h20_min, 'String', num2str(def(25), '%.1f'));
-set(handles.h20_cur, 'Value', def(26));
-set(handles.h20_cur, 'String', num2str(def(26), '%.2f'));
-set(handles.h20_max, 'Value', def(27));
-set(handles.h20_max, 'String', num2str(def(27), '%.1f'));
+set(handles.h20_min, 'Value', def(20));
+set(handles.h20_min, 'String', num2str(def(20), '%.1f'));
+set(handles.h20_cur, 'Value', def(21));
+set(handles.h20_cur, 'String', num2str(def(21), '%.2f'));
+set(handles.h20_max, 'Value', def(22));
+set(handles.h20_max, 'String', num2str(def(22), '%.1f'));
 
-set(handles.h20, 'Min',   def(25)); 
-set(handles.h20, 'Value', def(26));
-set(handles.h20, 'Max',   def(27)); 
-majorstep = h20sld.stmax / (def(27)-def(25));
-minorstep = h20sld.stmin / (def(27)-def(25));
+set(handles.h20, 'Min',   def(20)); 
+set(handles.h20, 'Value', def(21));
+set(handles.h20, 'Max',   def(22)); 
+majorstep = h20sld.stmax / (def(22)-def(21));
+minorstep = h20sld.stmin / (def(22)-def(21));
 set(handles.h20, 'SliderStep', [minorstep majorstep]);
 
 % slider Mur1
-set(handles.Mur1_min, 'Value', def(28));
-set(handles.Mur1_min, 'String', num2str(def(28), '%.1f'));
-set(handles.Mur1_cur, 'Value', def(29));
-set(handles.Mur1_cur, 'String', num2str(def(29), '%.2f'));
-set(handles.Mur1_max, 'Value', def(30));
-set(handles.Mur1_max, 'String', num2str(def(30), '%.1f'));
+set(handles.Mur1_min, 'Value', def(23));
+set(handles.Mur1_min, 'String', num2str(def(23), '%.1f'));
+set(handles.Mur1_cur, 'Value', def(24));
+set(handles.Mur1_cur, 'String', num2str(def(24), '%.2f'));
+set(handles.Mur1_max, 'Value', def(25));
+set(handles.Mur1_max, 'String', num2str(def(25), '%.1f'));
 
-set(handles.Mur1, 'Min',   def(28)); 
-set(handles.Mur1, 'Value', def(29));
-set(handles.Mur1, 'Max',   def(30)); 
-majorstep = Mur1sld.stmax / (def(30)-def(28));
-minorstep = Mur1sld.stmin / (def(30)-def(28));
+set(handles.Mur1, 'Min',   def(23)); 
+set(handles.Mur1, 'Value', def(24));
+set(handles.Mur1, 'Max',   def(25)); 
+majorstep = Mur1sld.stmax / (def(25)-def(23));
+minorstep = Mur1sld.stmin / (def(25)-def(23));
 set(handles.Mur1, 'SliderStep', [minorstep majorstep]);
 
 % slider Mur2
-set(handles.Mur2_min, 'Value', def(31));
-set(handles.Mur2_min, 'String', num2str(def(32), '%.1f'));
-set(handles.Mur2_cur, 'Value', def(32));
-set(handles.Mur2_cur, 'String', num2str(def(32), '%.2f'));
-set(handles.Mur2_max, 'Value', def(33));
-set(handles.Mur2_max, 'String', num2str(def(33), '%.1f'));
+set(handles.Mur2_min, 'Value', def(26));
+set(handles.Mur2_min, 'String', num2str(def(26), '%.1f'));
+set(handles.Mur2_cur, 'Value', def(27));
+set(handles.Mur2_cur, 'String', num2str(def(27), '%.2f'));
+set(handles.Mur2_max, 'Value', def(28));
+set(handles.Mur2_max, 'String', num2str(def(28), '%.1f'));
 
-set(handles.Mur2, 'Min',   def(31)); 
-set(handles.Mur2, 'Value', def(32));
-set(handles.Mur2, 'Max',   def(33)); 
-majorstep = Mur2sld.stmax / (def(33)-def(31));
-minorstep = Mur2sld.stmin / (def(33)-def(31));
+set(handles.Mur2, 'Min',   def(26)); 
+set(handles.Mur2, 'Value', def(27));
+set(handles.Mur2, 'Max',   def(28)); 
+majorstep = Mur2sld.stmax / (def(28)-def(26));
+minorstep = Mur2sld.stmin / (def(28)-def(26));
 set(handles.Mur2, 'SliderStep', [minorstep majorstep]);
 
 % slider Sph2
-set(handles.Sph2_min, 'Value', def(34));
-set(handles.Sph2_min, 'String', num2str(def(34), '%.1f'));
-set(handles.Sph2_cur, 'Value', def(35));
-set(handles.Sph2_cur, 'String', num2str(def(35), '%.2f'));
-set(handles.Sph2_max, 'Value', def(36));
-set(handles.Sph2_max, 'String', num2str(def(36), '%.1f'));
+set(handles.Sph2_min, 'Value', def(29));
+set(handles.Sph2_min, 'String', num2str(def(29), '%.1f'));
+set(handles.Sph2_cur, 'Value', def(30));
+set(handles.Sph2_cur, 'String', num2str(def(30), '%.2f'));
+set(handles.Sph2_max, 'Value', def(31));
+set(handles.Sph2_max, 'String', num2str(def(31), '%.1f'));
 
-set(handles.Sph2, 'Min',   def(34)); 
-set(handles.Sph2, 'Value', def(35));
-set(handles.Sph2, 'Max',   def(36)); 
-majorstep = Sph2sld.stmax / (def(36)-def(34));
-minorstep = Sph2sld.stmin / (def(36)-def(34));
+set(handles.Sph2, 'Min',   def(29)); 
+set(handles.Sph2, 'Value', def(30));
+set(handles.Sph2, 'Max',   def(31)); 
+majorstep = Sph2sld.stmax / (def(31)-def(29));
+minorstep = Sph2sld.stmin / (def(31)-def(29));
 set(handles.Sph2, 'SliderStep', [minorstep majorstep]);
 
 % slider Ie
-set(handles.Ie_min, 'Value', def(37));
-set(handles.Ie_min, 'String', num2str(def(37), '%.1f'));
-set(handles.Ie_cur, 'Value', def(38));
-set(handles.Ie_cur, 'String', num2str(def(38), '%.2f'));
-set(handles.Ie_max, 'Value', def(39));
-set(handles.Ie_max, 'String', num2str(def(39), '%.1f'));
+set(handles.Ie_min, 'Value', def(32));
+set(handles.Ie_min, 'String', num2str(def(32), '%.1f'));
+set(handles.Ie_cur, 'Value', def(33));
+set(handles.Ie_cur, 'String', num2str(def(33), '%.2f'));
+set(handles.Ie_max, 'Value', def(34));
+set(handles.Ie_max, 'String', num2str(def(34), '%.1f'));
 
-set(handles.Ie, 'Min',   def(37)); 
-set(handles.Ie, 'Value', def(38));
-set(handles.Sph2, 'Max',   def(39)); 
-majorstep = Iesld.stmax / (def(39)-def(37));
-minorstep = Iesld.stmin / (def(39)-def(37));
-set(handles.Sph2, 'SliderStep', [minorstep majorstep]);
+set(handles.Ie, 'Min',   def(32)); 
+set(handles.Ie, 'Value', def(33));
+set(handles.Ie, 'Max', def(34)); 
+majorstep = Iesld.stmax / (def(34)-def(32));
+minorstep = Iesld.stmin / (def(34)-def(32));
+set(handles.Ie, 'SliderStep', [minorstep majorstep]);
+
+% P1
+set(handles.P1, 'String', def_string{1});
+
+% P2
+set(handles.P2, 'String', def_string{2});
+
+% Z1
+set(handles.Z1, 'String', def_string{3});
+
+% Z2
+set(handles.Z2, 'String', def_string{4});
 
 set(handles.ConfigSaveName, 'String', 'nomefile');
 
@@ -1516,22 +1266,6 @@ function Punto_eq_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 clc
 
-% ampiezza = evalin('base', 'input_params(''Set point equilibrio Ie [m]'')');
-
-% set(handles.IngressoTipo,'Value',1);
-% set(handles.IngressoPar, 'Value', 1);
-% set(handles.IngressoPar, 'Enable', 'off');
-
-% set(handles.Sph1_min, 'Value',  ampiezza(1));
-% set(handles.Sph1_min, 'String', num2str(ampiezza(1), '%.1f'));
-% set(handles.Sph1_cur, 'Value',  ampiezza(2));
-% set(handles.Sph1_cur, 'String', num2str(ampiezza(2), '%.2f'));
-% set(handles.Sph1_max, 'Value',  ampiezza(3));
-% set(handles.Sph1_max, 'String', num2str(ampiezza(3), '%.1f'));
-% set(handles.Sph1, 'Min',   ampiezza(1));
-% set(handles.Sph1, 'Value', ampiezza(2));
-% set(handles.Sph1, 'Max',   ampiezza(3));
-
 % Leggo i dati inseriti dall'utente
 A1 = get(handles.A1, 'Value');
 A2 = get(handles.A2, 'Value');
@@ -1559,14 +1293,14 @@ G = [1/A1; 0];
 [x, stb] = PuntoEquilibrioLTI2(F, G, u);
 if isnan(stb)
   set(handles.Punto_Eq_txt, 'String', ...
-    {'Non esiste uno stato di equilibrio con in ingresso il set point: ';...
+    {'Non esiste uno stato di equilibrio con l''ingresso di equilibrio: ';...
     ['Ie = ', num2str(u(1), '%.2f'), ' m']});
   return
 end
 
 
 % Preparazione testo da visualizzare
-str = sprintf('In presenza dell set point in ingresso: Ie = %.1f m', u(1));
+str = sprintf('In presenza dell''ingresso di equilibrio: Ie = %.1f m', u(1));
 str1 = sprintf('\nlo stato:');
 str21 = sprintf('\n  h1 = %.1f m', x(1));
 str22 = sprintf('\n  h2 = %.1f m', x(2));
@@ -1825,25 +1559,13 @@ minorstep = Iesld.stmin / (Ie_max-Ie_min);
 set(handles.Ie, 'SliderStep', [minorstep majorstep]);
 
 
-% ingressi
-% IngressoParstr = cell(1);
-% IngressoParstr{1} = 'Ampiezza [m]';
-% set(handles.IngressoPar, 'Enable', 'on');
-% switch IngressoTipo
-%   case {1, 2}
-%       set(handles.IngressoPar, 'Enable', 'off');
-%   case 3
-%       IngressoParstr{2} = 'Frequenza [Hz]';
-%   case 5
-%       IngressoParstr{2} = 'Frequenza [Hz]';
-%       IngressoParstr{3} = 'Duty Cycle [%]';
-%   case {4, 6}
-%       IngressoParstr{2} = 'Frequenza [Hz]';
-% end
-% 
-% set(handles.IngressoPar,  'String', IngressoParstr);
-% set(handles.IngressoTipo, 'Value',  IngressoTipo);
-% set(handles.IngressoPar,  'Value',  IngressoPar);
+set(handles.P1, 'String', P1);
+
+set(handles.P2, 'String', P2);
+
+set(handles.Z1, 'String', Z1);
+
+set(handles.Z2, 'String', Z2);
 
 set(handles.Uscita, 'Value', Uscita);
 
@@ -1914,9 +1636,6 @@ R2_cur = get(handles.R2_cur, 'Value');
 R2_max = get(handles.R2_max, 'Value');
 
 % pannello ingressi
-% IngressoTipo = get(handles.IngressoTipo, 'Value');
-% IngressoPar = get(handles.IngressoPar, 'Value');
-
 Sph2_min = get(handles.Sph2_min, 'Value');
 Sph2_cur = get(handles.Sph2_cur, 'Value');
 Sph2_max = get(handles.Sph2_max, 'Value');
@@ -1924,7 +1643,6 @@ Sph2_max = get(handles.Sph2_max, 'Value');
 Ie_min = get(handles.Ie_min, 'Value');
 Ie_cur = get(handles.Ie_cur, 'Value');
 Ie_max = get(handles.Ie_max, 'Value');
-
 
 % pannello stato iniziale
 h10_min = get(handles.h10_min, 'Value');
@@ -1944,13 +1662,17 @@ Mur2_min = get(handles.Mur2_min, 'Value');
 Mur2_cur = get(handles.Mur2_cur, 'Value');
 Mur2_max = get(handles.Mur2_max, 'Value');
 
+P1 = get(handles.P1, 'String');
+P2 = get(handles.P2, 'String');
+Z1 = get(handles.Z1, 'String');
+Z2 = get(handles.Z2, 'String');
 
+% pannello uscita
 Uscita = get(handles.Uscita, 'Value');
 
 % Salvataggio parametri su file
 fid = fopen(namem, 'w');
-% fprintf(fid, 'IngressoTipo = %f;\n', IngressoTipo);
-% fprintf(fid, 'IngressoPar = %f;\n', IngressoPar);
+
 fprintf(fid, 'Uscita = %f;\n', Uscita);
 
 fprintf(fid, 'A1_min = %f;\n', A1_min);
@@ -1996,6 +1718,11 @@ fprintf(fid, 'Sph2_max = %f;\n', Sph2_max);
 fprintf(fid, 'Ie_min = %f;\n', Ie_min);
 fprintf(fid, 'Ie_cur = %f;\n', Ie_cur);
 fprintf(fid, 'Ie_max = %f;\n', Ie_max);
+
+fprintf(fid, 'P1 = %s;\n', P1);
+fprintf(fid, 'P2 = %s;\n', P2);
+fprintf(fid, 'Z1 = %s;\n', Z1);
+fprintf(fid, 'Z2 = %s;\n', Z2);
 
 fclose(fid);
 fclose('all');
@@ -2537,18 +2264,18 @@ end
 
 
 
-function edit59_Callback(hObject, eventdata, handles)
-% hObject    handle to edit59 (see GCBO)
+function Z2_Callback(hObject, eventdata, handles)
+% hObject    handle to Z2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit59 as text
-%        str2double(get(hObject,'String')) returns contents of edit59 as a double
+% Hints: get(hObject,'String') returns contents of Z2 as text
+%        str2double(get(hObject,'String')) returns contents of Z2 as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit59_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit59 (see GCBO)
+function Z2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Z2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2583,18 +2310,18 @@ end
 
 
 
-function edit57_Callback(hObject, eventdata, handles)
-% hObject    handle to edit57 (see GCBO)
+function P2_Callback(hObject, eventdata, handles)
+% hObject    handle to P2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit57 as text
-%        str2double(get(hObject,'String')) returns contents of edit57 as a double
+% Hints: get(hObject,'String') returns contents of P2 as text
+%        str2double(get(hObject,'String')) returns contents of P2 as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit57_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit57 (see GCBO)
+function P2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to P2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2629,18 +2356,18 @@ end
 
 
 
-function edit55_Callback(hObject, eventdata, handles)
-% hObject    handle to edit55 (see GCBO)
+function Z1_Callback(hObject, eventdata, handles)
+% hObject    handle to Z1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit55 as text
-%        str2double(get(hObject,'String')) returns contents of edit55 as a double
+% Hints: get(hObject,'String') returns contents of Z1 as text
+%        str2double(get(hObject,'String')) returns contents of Z1 as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit55_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit55 (see GCBO)
+function Z1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Z1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2675,18 +2402,18 @@ end
 
 
 
-function edit52_Callback(hObject, eventdata, handles)
-% hObject    handle to edit52 (see GCBO)
+function P1_Callback(hObject, eventdata, handles)
+% hObject    handle to P1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit52 as text
-%        str2double(get(hObject,'String')) returns contents of edit52 as a double
+% Hints: get(hObject,'String') returns contents of P1 as text
+%        str2double(get(hObject,'String')) returns contents of P1 as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit52_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit52 (see GCBO)
+function P1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to P1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2698,23 +2425,3 @@ end
 
 
 
-function poli_Callback(hObject, eventdata, handles)
-% hObject    handle to poli (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of poli as text
-%        str2double(get(hObject,'String')) returns contents of poli as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function poli_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to poli (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
