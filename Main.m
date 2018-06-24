@@ -12,7 +12,6 @@
 % Tested with ver. MatLab Rl2013b
 %
 
-
 %%
 function varargout = Main(varargin)
 % Main M-file for Main.fig
@@ -36,7 +35,6 @@ function varargout = Main(varargin)
 %
 %   IMPORTANTE: necessita l'installazione del Image Processing Toolbox
 %   per la funzione imshow()
-
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
@@ -62,7 +60,6 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
-
 
 % --- Executes just before Main is made visible.
 function Main_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -102,11 +99,11 @@ def =[
       0        % h20, h20_cur
       10       % h20_max
       0        % Mur1_min  (23)
-      25       % Mur1, Mur1_cur
-      50       % Mur1_max
+      150      % Mur1, Mur1_cur
+      300      % Mur1_max
       0        % Mur2_min  (26)
-      15       % Mur2, Mur2_cur
-      50       % Mur2_max
+      30       % Mur2, Mur2_cur
+      100      % Mur2_max
       0        % Sph2_min  (29)
       5        % Sph2, Sph2_cur
       10       % Sph2_max
@@ -117,10 +114,10 @@ def =[
   
 global def_string;
 def_string = {      
-              '-2 -10'     % Z1 
-              '0.1 -9'     % P1 
-              '-8'         % Z2
-              '0 -70'      % P2             
+              '-50'      % Z1 
+              '-100'     % P1 
+              '-19.62'   % Z2
+              '0 -200'   % P2             
               };
     
 % Par degli slider
@@ -202,7 +199,6 @@ set(handles.ConfigLoadName, 'String', model_list);
 set(handles.ConfigLoadName, 'Value',  1);
 set(handles.ConfigDelete, 'Enable', 'off');
 
-
 % --- Outputs from this function are returned to the command line.
 function varargout = Main_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
@@ -212,8 +208,6 @@ function varargout = Main_OutputFcn(hObject, eventdata, handles)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
-
-
 
 %% FIGURE
 % --- Executes during object creation, after setting all properties.
@@ -226,7 +220,6 @@ image(im);
 axis off;
 axis equal;
 
-
 %%
 % --- Executes during object creation, after setting all properties.
 function Modello_CreateFcn(hObject, eventdata, handles)
@@ -237,7 +230,6 @@ im = imread('Modello.jpg');
 image(im);
 axis off;
 axis equal;
-
 
 %%RUN
 % --- Executes on button press in Run.
@@ -285,16 +277,15 @@ if numel(Z1) > numel(P1)
     opts = struct('WindowStyle','modal',...
         'Interpreter','tex');
     errordlg('Sistema non realizzabile. Nel regolatore 1, il numero di zeri deve essere minore di quello dei poli.',...
-        'Errore nella realizzazione del blocco zero-poli', opts);
+        'Errore nella realizzazione del blocco ''regolatore1''', opts);
     return   
 elseif numel(Z2) > numel(P2)
     opts = struct('WindowStyle','modal',...
         'Interpreter','tex');
     errordlg('Sistema non realizzabile. Nel regolatore 2, il numero di zeri deve essere minore di quello dei poli.',...
-        'Errore nella realizzazione del blocco zero-poli', opts);
+        'Errore nella realizzazione del blocco ''regolatore2''', opts);
     return
 end
-
 
 % Esporta tutte le variabili nel Workspace per permettere a1 Simulink
 % di averne visibilità
@@ -318,7 +309,7 @@ open_system(Uscita);
 
 % Modifica della durata della simulazione
  set_param(Uscita, 'StopTime', num2str(5*Tau + 0.5*Tau));
- set_param(Uscita, 'StopTime', num2str(3));
+ set_param(Uscita, 'StopTime', num2str(6));
 
 % Salva il sistema
 save_system(Uscita);
@@ -327,7 +318,6 @@ save_system(Uscita);
 sim(Uscita);
 
 ViewerAutoscale();
-
 
 %% USCITA
 % --- Executes on selection change in Uscita.
@@ -338,7 +328,6 @@ function Uscita_Callback(hObject, eventdata, handles)
 
 % Hints: contents = get(hObject,'String') returns Uscita contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from Uscita
-
 
 % --- Executes during object creation, after setting all properties.
 function Uscita_CreateFcn(hObject, eventdata, handles)
@@ -352,7 +341,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 %%SLIDER A1
 % --- Executes on slider movement.
 function A1_Callback(hObject, eventdata, handles)
@@ -365,7 +353,6 @@ Slider_sld_Callback(handles, handles.A1, handles.A1_cur);
 % Reset testo punto di equilibrio
 set(handles.punto_eq_txt, 'String', '');
 
-
 % --- Executes during object creation, after setting all properties.
 function A1_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to A1 (see GCBO)
@@ -377,7 +364,6 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
-
 %%
 function A1_min_Callback(hObject, eventdata, handles)
 % hObject    handle to A1_min (see GCBO)
@@ -387,7 +373,6 @@ global A1sld;
 Slider_min_Callback(handles, handles.A1, handles.A1_min, handles.A1_cur, handles.A1_max, A1sld.stmin, A1sld.stmax, A1sld.Llim, A1sld.Hlim);
 % Hints: get(hObject,'String') returns contents of A1_min as text
 %        str2double(get(hObject,'String')) returns contents of A1_min as a1 double
-
 
 % --- Executes during object creation, after setting all properties.
 function A1_min_CreateFcn(hObject, eventdata, handles)
@@ -400,7 +385,6 @@ function A1_min_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 %%
 function A1_cur_Callback(hObject, eventdata, handles)
@@ -415,7 +399,6 @@ set(handles.punto_eq_txt, 'String', '');
 % Hints: get(hObject,'String') returns contents of A1_cur as text
 %        str2double(get(hObject,'String')) returns contents of A1_cur as a1 double
 
-
 % --- Executes during object creation, after setting all properties.
 function A1_cur_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to A1_cur (see GCBO)
@@ -428,7 +411,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 %%
 function A1_max_Callback(hObject, eventdata, handles)
 % hObject    handle to A1_max (see GCBO)
@@ -438,7 +420,6 @@ global A1sld;
 Slider_max_Callback(handles, handles.A1, handles.A1_min, handles.A1_cur, handles.A1_max, A1sld.stmin, A1sld.stmax, A1sld.Llim, A1sld.Hlim);
 % Hints: get(hObject,'String') returns contents of A1_max as text
 %        str2double(get(hObject,'String')) returns contents of A1_max as a1 double
-
 
 % --- Executes during object creation, after setting all properties.
 function A1_max_CreateFcn(hObject, eventdata, handles)
@@ -452,7 +433,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 %%SLIDER A2
 % --- Executes on slider movement.
 function A2_Callback(hObject, eventdata, handles)
@@ -465,7 +445,6 @@ Slider_sld_Callback(handles, handles.A2, handles.A2_cur);
 % Reset testo punto di equilibrio
 set(handles.punto_eq_txt, 'String', '');
 
-
 % --- Executes during object creation, after setting all properties.
 function A2_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to A2 (see GCBO)
@@ -477,7 +456,6 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
-
 %%
 function A2_min_Callback(hObject, eventdata, handles)
 % hObject    handle to A2_min (see GCBO)
@@ -487,7 +465,6 @@ global A2sld;
 Slider_min_Callback(handles, handles.A2, handles.A2_min, handles.A2_cur, handles.A2_max, A2sld.stmin, A2sld.stmax, A2sld.Llim, A2sld.Hlim);
 % Hints: get(hObject,'String') returns contents of A2_min as text
 %        str2double(get(hObject,'String')) returns contents of A2_min as a1 double
-
 
 % --- Executes during object creation, after setting all properties.
 function A2_min_CreateFcn(hObject, eventdata, handles)
@@ -500,7 +477,6 @@ function A2_min_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 %%
 function A2_cur_Callback(hObject, eventdata, handles)
@@ -515,7 +491,6 @@ set(handles.punto_eq_txt, 'String', '');
 % Hints: get(hObject,'String') returns contents of A2_cur as text
 %        str2double(get(hObject,'String')) returns contents of A2_cur as a1 double
 
-
 % --- Executes during object creation, after setting all properties.
 function A2_cur_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to A2_cur (see GCBO)
@@ -528,7 +503,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 %%
 function A2_max_Callback(hObject, eventdata, handles)
 % hObject    handle to A2_max (see GCBO)
@@ -538,7 +512,6 @@ global A2sld;
 Slider_max_Callback(handles, handles.A2, handles.A2_min, handles.A2_cur, handles.A2_max, A2sld.stmin, A2sld.stmax, A2sld.Llim, A2sld.Hlim);
 % Hints: get(hObject,'String') returns contents of A2_max as text
 %        str2double(get(hObject,'String')) returns contents of A2_max as a1 double
-
 
 % --- Executes during object creation, after setting all properties.
 function A2_max_CreateFcn(hObject, eventdata, handles)
@@ -552,7 +525,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 %% SLIDER rho
 % --- Executes on slider movement.
 function rho_Callback(hObject, eventdata, handles)
@@ -563,7 +535,6 @@ Slider_sld_Callback(handles, handles.rho, handles.rho_cur);
 
 % Reset testo punto di equilibrio
 set(handles.punto_eq_txt, 'String', '');
-
 
 % --- Executes during object creation, after setting all properties.
 function rho_CreateFcn(hObject, eventdata, handles)
@@ -576,7 +547,6 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
-
 %%
 function rho_min_Callback(hObject, eventdata, handles)
 % hObject    handle to rho_min (see GCBO)
@@ -587,7 +557,6 @@ Slider_min_Callback(handles, handles.rho, handles.rho_min, handles.rho_cur, hand
 
 % Hints: get(hObject,'String') returns contents of .rhomin as text
 %        str2double(get(hObject,'String')) returns contents of .rhomin as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function rho_min_CreateFcn(hObject, eventdata, ~)
@@ -600,7 +569,6 @@ function rho_min_CreateFcn(hObject, eventdata, ~)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 %%
 function rho_cur_Callback(hObject, eventdata, handles)
@@ -615,7 +583,6 @@ set(handles.punto_eq_txt, 'String', '');
 % Hints: get(hObject,'String') returns contents of rho_cur as text
 %        str2double(get(hObject,'String')) returns contents of rho_cur as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function rho_cur_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to rho_cur (see GCBO)
@@ -628,7 +595,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 %%
 function rho_max_Callback(hObject, eventdata, handles)
 % hObject    handle to rho_max (see GCBO)
@@ -638,7 +604,6 @@ global rhosld;
 Slider_max_Callback(handles, handles.rho, handles.rho_min, handles.rho_cur, handles.rho_max, rhosld.stmin, rhosld.stmax, rhosld.Llim, rhosld.Hlim);
 % Hints: get(hObject,'String') returns contents of .rhomax as text
 %        str2double(get(hObject,'String')) returns contents of .rhomax as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function rho_max_CreateFcn(hObject, eventdata, handles)
@@ -651,7 +616,6 @@ function rho_max_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 %SLIDER R1
 %%
@@ -666,7 +630,6 @@ Slider_sld_Callback(handles, handles.R1, handles.R1_cur);
 % Reset testo punto di equilibrio
 set(handles.punto_eq_txt, 'String', '');
 
-
 % --- Executes during object creation, after setting all properties.
 function R1_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to R1 (see GCBO)
@@ -677,7 +640,6 @@ function R1_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
-
 
 %%
 function R1_min_Callback(hObject, eventdata, handles)
@@ -690,7 +652,6 @@ Slider_min_Callback(handles, handles.R1, handles.R1_min, handles.R1_cur, handles
 % Hints: get(hObject,'String') returns contents of R1_min as text
 %        str2double(get(hObject,'String')) returns contents of R1_min as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function R1_min_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to R1_min (see GCBO)
@@ -702,7 +663,6 @@ function R1_min_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 %%
 function R1_cur_Callback(hObject, eventdata, handles)
@@ -717,7 +677,6 @@ set(handles.punto_eq_txt, 'String', '');
 % Hints: get(hObject,'String') returns contents of R1_cur as text
 %        str2double(get(hObject,'String')) returns contents of R1_cur as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function R1_cur_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to R1_cur (see GCBO)
@@ -730,7 +689,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 %%
 function R1_max_Callback(hObject, eventdata, handles)
 % hObject    handle to R1_max (see GCBO)
@@ -740,7 +698,6 @@ global R1sld;
 Slider_max_Callback(handles, handles.R1, handles.R1_min, handles.R1_cur, handles.R1_max, R1sld.stmin, R1sld.stmax, R1sld.Llim, R1sld.Hlim);
 % Hints: get(hObject,'String') returns contents of R1_max as text
 %        str2double(get(hObject,'String')) returns contents of R1_max as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function R1_max_CreateFcn(hObject, eventdata, handles)
@@ -753,8 +710,6 @@ function R1_max_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
 
 %SLIDER R2
 %%
@@ -770,7 +725,6 @@ Slider_sld_Callback(handles, handles.R2, handles.R2_cur);
 % Reset testo punto di equilibrio
 set(handles.punto_eq_txt, 'String', '');
 
-
 % --- Executes during object creation, after setting all properties.
 function R2_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to R2 (see GCBO)
@@ -781,7 +735,6 @@ function R2_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
-
 
 %%
 function R2_min_Callback(hObject, eventdata, handles)
@@ -794,7 +747,6 @@ Slider_min_Callback(handles, handles.R2, handles.R2_min, handles.R2_cur, handles
 % Hints: get(hObject,'String') returns contents of R2_min as text
 %        str2double(get(hObject,'String')) returns contents of R2_min as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function R2_min_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to R2_min (see GCBO)
@@ -806,7 +758,6 @@ function R2_min_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 %%
 function R2_cur_Callback(hObject, eventdata, handles)
@@ -821,7 +772,6 @@ set(handles.punto_eq_txt, 'String', '');
 % Hints: get(hObject,'String') returns contents of R2_cur as text
 %        str2double(get(hObject,'String')) returns contents of R2_cur as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function R2_cur_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to R2_cur (see GCBO)
@@ -834,7 +784,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 %%
 function R2_max_Callback(hObject, eventdata, handles)
 % hObject    handle to R2_max (see GCBO)
@@ -844,7 +793,6 @@ global R2sld;
 Slider_max_Callback(handles, handles.R2, handles.R2_min, handles.R2_cur, handles.R2_max, R2sld.stmin, R2sld.stmax, R2sld.Llim, R2sld.Hlim);
 % Hints: get(hObject,'String') returns contents of R2_max as text
 %        str2double(get(hObject,'String')) returns contents of R2_max as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function R2_max_CreateFcn(hObject, eventdata, handles)
@@ -857,8 +805,6 @@ function R2_max_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
 
 %SLIDER h10
 %%
@@ -873,7 +819,6 @@ Slider_sld_Callback(handles, handles.h10, handles.h10_cur);
 % Reset testo punto di equilibrio
 set(handles.punto_eq_txt, 'String', '');
 
-
 % --- Executes during object creation, after setting all properties.
 function h10_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to h10 (see GCBO)
@@ -884,7 +829,6 @@ function h10_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
-
 
 %%
 function h10_min_Callback(hObject, eventdata, handles)
@@ -897,7 +841,6 @@ Slider_min_Callback(handles, handles.h10, handles.h10_min, handles.h10_cur, hand
 % Hints: get(hObject,'String') returns contents of h10_min as text
 %        str2double(get(hObject,'String')) returns contents of h10_min as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function h10_min_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to h10_min (see GCBO)
@@ -909,7 +852,6 @@ function h10_min_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 %%
 function h10_cur_Callback(hObject, eventdata, handles)
@@ -924,7 +866,6 @@ set(handles.punto_eq_txt, 'String', '');
 % Hints: get(hObject,'String') returns contents of h10_cur as text
 %        str2double(get(hObject,'String')) returns contents of h10_cur as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function h10_cur_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to h10_cur (see GCBO)
@@ -937,7 +878,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 %%
 function h10_max_Callback(hObject, eventdata, handles)
 % hObject    handle to h10_max (see GCBO)
@@ -947,7 +887,6 @@ global h10sld;
 Slider_max_Callback(handles, handles.h10, handles.h10_min, handles.h10_cur, handles.h10_max, h10sld.stmin, h10sld.stmax, h10sld.Llim, h10sld.Hlim);
 % Hints: get(hObject,'String') returns contents of h10_max as text
 %        str2double(get(hObject,'String')) returns contents of h10_max as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function h10_max_CreateFcn(hObject, eventdata, handles)
@@ -960,8 +899,6 @@ function h10_max_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
 
 %SLIDER h20
 %%
@@ -977,7 +914,6 @@ Slider_sld_Callback(handles, handles.h20, handles.h20_cur);
 % Reset testo punto di equilibrio
 set(handles.punto_eq_txt, 'String', '');
 
-
 % --- Executes during object creation, after setting all properties.
 function h20_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to h20 (see GCBO)
@@ -988,7 +924,6 @@ function h20_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
-
 
 %%
 function h20_min_Callback(hObject, eventdata, handles)
@@ -1001,7 +936,6 @@ Slider_min_Callback(handles, handles.h20, handles.h20_min, handles.h20_cur, hand
 % Hints: get(hObject,'String') returns contents of h20_min as text
 %        str2double(get(hObject,'String')) returns contents of h20_min as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function h20_min_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to h20_min (see GCBO)
@@ -1013,7 +947,6 @@ function h20_min_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 %%
 function h20_cur_Callback(hObject, eventdata, handles)
@@ -1028,7 +961,6 @@ set(handles.punto_eq_txt, 'String', '');
 % Hints: get(hObject,'String') returns contents of h20_cur as text
 %        str2double(get(hObject,'String')) returns contents of h20_cur as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function h20_cur_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to h20_cur (see GCBO)
@@ -1041,7 +973,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 %%
 function h20_max_Callback(hObject, eventdata, handles)
 % hObject    handle to h20_max (see GCBO)
@@ -1051,7 +982,6 @@ global h20sld;
 Slider_max_Callback(handles, handles.h20, handles.h20_min, handles.h20_cur, handles.h20_max, h20sld.stmin, h20sld.stmax, h20sld.Llim, h20sld.Hlim);
 % Hints: get(hObject,'String') returns contents of h20_max as text
 %        str2double(get(hObject,'String')) returns contents of h20_max as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function h20_max_CreateFcn(hObject, eventdata, handles)
@@ -1064,7 +994,6 @@ function h20_max_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 %% VALORI DI DEFAULT
 % 
@@ -1239,7 +1168,6 @@ majorstep = Phi_iesld.stmax / (def(34)-def(32));
 minorstep = Phi_iesld.stmin / (def(34)-def(32));
 set(handles.Phi_ie, 'SliderStep', [minorstep majorstep]);
 
-
 % Z1
 set(handles.Z1, 'String', def_string{1});
 
@@ -1252,11 +1180,7 @@ set(handles.Z2, 'String', def_string{3});
 % P2
 set(handles.P2, 'String', def_string{4});
 
-
-
 set(handles.ConfigSaveName, 'String', 'nomefile');
-
-
 
 %%
 % --- Executes when user attempts to close Dialog.
@@ -1274,8 +1198,6 @@ delete(hObject);
 
 % Pulizia workspace
 evalin('base', 'clear');
-
-
 
 function Punto_eq_Callback(hObject, eventdata, handles)
 % hObject    handle to Punto_eq (see GCBO)
@@ -1299,7 +1221,6 @@ if R2 == 0, R2 = eps; end
 if A1 == 0, A1 = eps; end
 if A2 == 0, A2 = eps; end
 
-
 % Scrittura dell'equazione dinamica
 % Risoluzione dell'equazione 0 = F*x + G*u nell'incognita x (u noto)
 % Preparazione matrici 
@@ -1315,9 +1236,8 @@ if isnan(stb)
   return
 end
 
-
 % Preparazione testo da visualizzare
-str = sprintf('In presenza dell''ingresso di equilibrio: Phi_ie = %.1f m', u(1));
+str = sprintf('In presenza del flusso di equilibrio in ingresso: Phi_ie = %.1f m', u(1));
 str1 = sprintf('\nlo stato:');
 str21 = sprintf('\n  h1 = %.1f m', x(1));
 str22 = sprintf('\n  h2 = %.1f m', x(2));
@@ -1348,8 +1268,6 @@ end
 endstr = '.';
 str = strcat(str, str1, str21, str22, str3, endstr);
 set(handles.punto_eq_txt, 'String', str);
-
-
 
 %% GESTIONE CONFIGURAZIONI
 % --- Executes on button press in ConfigLoad.
@@ -1395,7 +1313,6 @@ if val == 1
   Load_Defaults(handles);
   return;
 end
-
 
 if exist('Sistemi', 'dir') == 0
   mkdir('Sistemi');
@@ -1500,7 +1417,6 @@ majorstep = h10sld.stmax / (h10_max-h10_min);
 minorstep = h10sld.stmin / (h10_max-h10_min);
 set(handles.h10, 'SliderStep', [minorstep majorstep]);
 
-
 set(handles.h20_min, 'Value',  h20_min);
 set(handles.h20_min, 'String', num2str(h20_min, '%.1f'));
 set(handles.h20_cur, 'Value',  h20_cur);
@@ -1514,7 +1430,6 @@ set(handles.h20, 'Max',   h20_max);
 majorstep = h20sld.stmax / (h20_max-h20_min);
 minorstep = h20sld.stmin / (h20_max-h20_min);
 set(handles.h20, 'SliderStep', [minorstep majorstep]);
-
 
 set(handles.Mur1_min, 'Value',  Mur1_min);
 set(handles.Mur1_min, 'String', num2str(Mur1_min, '%.1f'));
@@ -1530,7 +1445,6 @@ majorstep = Mur1sld.stmax / (Mur1_max-Mur1_min);
 minorstep = Mur1sld.stmin / (Mur1_max-Mur1_min);
 set(handles.Mur1, 'SliderStep', [minorstep majorstep]);
 
-
 set(handles.Mur2_min, 'Value',  Mur2_min);
 set(handles.Mur2_min, 'String', num2str(Mur2_min, '%.1f'));
 set(handles.Mur2_cur, 'Value',  Mur2_cur);
@@ -1544,7 +1458,6 @@ set(handles.Mur2, 'Max',   Mur2_max);
 majorstep = Mur2sld.stmax / (Mur2_max-Mur2_min);
 minorstep = Mur2sld.stmin / (Mur2_max-Mur2_min);
 set(handles.Mur2, 'SliderStep', [minorstep majorstep]);
-
 
 set(handles.Sph2_min, 'Value',  Sph2_min);
 set(handles.Sph2_min, 'String', num2str(Sph2_min, '%.1f'));
@@ -1622,7 +1535,6 @@ if exist(namem, 'file') == 2
 end
 
 Modified = false;
-
 
 % Salvataggio di tutti i parametri
 % pannello serbatoio A1
@@ -1772,7 +1684,6 @@ set(handles.ConfigDelete, 'Enable', 'on');
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
 % --- Executes on selection change in ConfigLoadName.
 function ConfigLoadName_Callback(hObject, eventdata, handles)
 % hObject    handle to ConfigLoadName (see GCBO)
@@ -1787,7 +1698,6 @@ else
     set(handles.ConfigDelete, 'Enable', 'on');
 end
 
-
 % --- Executes during object creation, after setting all properties.
 function ConfigLoadName_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to ConfigLoadName (see GCBO)
@@ -1800,8 +1710,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function ConfigSaveName_Callback(hObject, ~, handles)
 % hObject    handle to ConfigSaveName (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1809,7 +1717,6 @@ function ConfigSaveName_Callback(hObject, ~, handles)
 
 % Hints: get(hObject,'String') returns contents of ConfigSaveName as text
 %        str2double(get(hObject,'String')) returns contents of ConfigSaveName as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function ConfigSaveName_CreateFcn(hObject, eventdata, handles)
@@ -1822,7 +1729,6 @@ function ConfigSaveName_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 % --- Executes on button press in ConfigDelete.
 function ConfigDelete_Callback(hObject, eventdata, handles)
@@ -1856,7 +1762,6 @@ switch choice
     % no action
 end
 
-
 % --- Executes on slider movement.
 function Mur2_Callback(hObject, eventdata, handles)
 % hObject    handle to Mur2 (see GCBO)
@@ -1867,7 +1772,6 @@ Slider_sld_Callback(handles, handles.Mur2, handles.Mur2_cur);
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 % Reset testo punto di equilibrio
 set(handles.punto_eq_txt, 'String', '');
-
 
 % --- Executes during object creation, after setting all properties.
 function Mur2_CreateFcn(hObject, eventdata, handles)
@@ -1880,19 +1784,14 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
-
-
 function Mur2_min_Callback(hObject, eventdata, handles)
 % hObject    handle to Mur2_min (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global Mur2sld;
 Slider_min_Callback(handles, handles.Mur2, handles.Mur2_min, handles.Mur2_cur, handles.Mur2_max, Mur2sld.stmin, Mur2sld.stmax, Mur2sld.Llim, Mur2sld.Hlim);
-
-
 % Hints: get(hObject,'String') returns contents of Mur2_min as text
 %        str2double(get(hObject,'String')) returns contents of Mur2_min as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function Mur2_min_CreateFcn(hObject, eventdata, handles)
@@ -1906,8 +1805,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function Mur2_cur_Callback(hObject, eventdata, handles)
 % hObject    handle to Mur2_cur (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1915,10 +1812,8 @@ function Mur2_cur_Callback(hObject, eventdata, handles)
 global Mur2sld;
 Slider_cur_Callback(handles, handles.Mur2, handles.Mur2_min, handles.Mur2_cur, handles.Mur2_max, Mur2sld.stmin, Mur2sld.stmax, Mur2sld.Llim, Mur2sld.Hlim);
 
-
 % Hints: get(hObject,'String') returns contents of Mur2_cur as text
 %        str2double(get(hObject,'String')) returns contents of Mur2_cur as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function Mur2_cur_CreateFcn(hObject, eventdata, handles)
@@ -1932,19 +1827,14 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function Mur2_max_Callback(hObject, eventdata, handles)
 % hObject    handle to Mur2_max (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global Mur2sld;
 Slider_max_Callback(handles, handles.Mur2, handles.Mur2_min, handles.Mur2_cur, handles.Mur2_max, Mur2sld.stmin, Mur2sld.stmax, Mur2sld.Llim, Mur2sld.Hlim);
-
-
 % Hints: get(hObject,'String') returns contents of Mur2_max as text
 %        str2double(get(hObject,'String')) returns contents of Mur2_max as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function Mur2_max_CreateFcn(hObject, eventdata, handles)
@@ -1958,7 +1848,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 % --- Executes on slider movement.
 function Sph2_Callback(hObject, eventdata, handles)
 % hObject    handle to Sph2 (see GCBO)
@@ -1969,7 +1858,6 @@ Slider_sld_Callback(handles, handles.Sph2, handles.Sph2_cur);
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 % Reset testo punto di equilibrio
 set(handles.punto_eq_txt, 'String', '');
-
 
 % --- Executes during object creation, after setting all properties.
 function Sph2_CreateFcn(hObject, eventdata, handles)
@@ -1982,8 +1870,6 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
-
-
 function Sph2_min_Callback(hObject, eventdata, handles)
 % hObject    handle to Sph2_min (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1991,10 +1877,8 @@ function Sph2_min_Callback(hObject, eventdata, handles)
 global Sph2sld;
 Slider_min_Callback(handles, handles.Sph2, handles.Sph2_min, handles.Sph2_cur, handles.Sph2_max, Sph2sld.stmin, Sph2sld.stmax, Sph2sld.Llim, Sph2sld.Hlim);
 
-
 % Hints: get(hObject,'String') returns contents of Sph2_min as text
 %        str2double(get(hObject,'String')) returns contents of Sph2_min as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function Sph2_min_CreateFcn(hObject, eventdata, handles)
@@ -2018,7 +1902,6 @@ Slider_cur_Callback(handles, handles.Sph2, handles.Sph2_min, handles.Sph2_cur, h
 % Hints: get(hObject,'String') returns contents of Sph2_cur as text
 %        str2double(get(hObject,'String')) returns contents of Sph2_cur as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function Sph2_cur_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to Sph2_cur (see GCBO)
@@ -2040,7 +1923,6 @@ Slider_max_Callback(handles, handles.Sph2, handles.Sph2_min, handles.Sph2_cur, h
 
 % Hints: get(hObject,'String') returns contents of Sph2_max as text
 %        str2double(get(hObject,'String')) returns contents of Sph2_max as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function Sph2_max_CreateFcn(hObject, eventdata, handles)
@@ -2086,7 +1968,6 @@ Slider_min_Callback(handles, handles.Mur1, handles.Mur1_min, handles.Mur1_cur, h
 % Hints: get(hObject,'String') returns contents of Mur1_min as text
 %        str2double(get(hObject,'String')) returns contents of Mur1_min as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function Mur1_min_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to Mur1_min (see GCBO)
@@ -2108,7 +1989,6 @@ Slider_cur_Callback(handles, handles.Mur1, handles.Mur1_min, handles.Mur1_cur, h
 
 % Hints: get(hObject,'String') returns contents of Mur1_cur as text
 %        str2double(get(hObject,'String')) returns contents of Mur1_cur as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function Mur1_cur_CreateFcn(hObject, eventdata, handles)
@@ -2132,7 +2012,6 @@ Slider_max_Callback(handles, handles.Mur1, handles.Mur1_min, handles.Mur1_cur, h
 % Hints: get(hObject,'String') returns contents of Mur1_max as text
 %        str2double(get(hObject,'String')) returns contents of Mur1_max as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function Mur1_max_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to Mur1_max (see GCBO)
@@ -2154,7 +2033,6 @@ Slider_min_Callback(handles, handles.Phi_ie, handles.Phi_ie_min, handles.Phi_ie_
 
 % Hints: get(hObject,'String') returns contents of Phi_ie_min as text
 %        str2double(get(hObject,'String')) returns contents of Phi_ie_min as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function Phi_ie_min_CreateFcn(hObject, eventdata, handles)
@@ -2178,7 +2056,6 @@ Slider_cur_Callback(handles, handles.Phi_ie, handles.Phi_ie_min, handles.Phi_ie_
 % Hints: get(hObject,'String') returns contents of Phi_ie_cur as text
 %        str2double(get(hObject,'String')) returns contents of Phi_ie_cur as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function Phi_ie_cur_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to Phi_ie_cur (see GCBO)
@@ -2201,7 +2078,6 @@ Slider_max_Callback(handles, handles.Phi_ie, handles.Phi_ie_min, handles.Phi_ie_
 % Hints: get(hObject,'String') returns contents of Phi_ie_max as text
 %        str2double(get(hObject,'String')) returns contents of Phi_ie_max as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function Phi_ie_max_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to Phi_ie_max (see GCBO)
@@ -2214,7 +2090,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 % --- Executes on slider movement.
 function Phi_ie_Callback(hObject, eventdata, handles)
 % hObject    handle to Phi_ie (see GCBO)
@@ -2225,7 +2100,6 @@ Slider_sld_Callback(handles, handles.Phi_ie, handles.Phi_ie_cur);
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 % Reset testo punto di equilibrio
 set(handles.punto_eq_txt, 'String', '');
-
 
 % --- Executes during object creation, after setting all properties.
 function Phi_ie_CreateFcn(hObject, eventdata, handles)
@@ -2246,7 +2120,6 @@ function edit60_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of edit60 as text
 %        str2double(get(hObject,'String')) returns contents of edit60 as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function edit60_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to edit60 (see GCBO)
@@ -2266,7 +2139,6 @@ function Z2_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of Z2 as text
 %        str2double(get(hObject,'String')) returns contents of Z2 as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function Z2_CreateFcn(hObject, eventdata, handles)
@@ -2309,7 +2181,6 @@ function P2_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of P2 as text
 %        str2double(get(hObject,'String')) returns contents of P2 as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function P2_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to P2 (see GCBO)
@@ -2330,7 +2201,6 @@ function edit56_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of edit56 as text
 %        str2double(get(hObject,'String')) returns contents of edit56 as a double
 
-
 % --- Executes during object creation, after setting all properties.
 function edit56_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to edit56 (see GCBO)
@@ -2343,8 +2213,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function Z1_Callback(hObject, eventdata, handles)
 % hObject    handle to Z1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -2352,7 +2220,6 @@ function Z1_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of Z1 as text
 %        str2double(get(hObject,'String')) returns contents of Z1 as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function Z1_CreateFcn(hObject, eventdata, handles)
@@ -2366,8 +2233,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function edit54_Callback(hObject, eventdata, handles)
 % hObject    handle to edit54 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -2375,7 +2240,6 @@ function edit54_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit54 as text
 %        str2double(get(hObject,'String')) returns contents of edit54 as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function edit54_CreateFcn(hObject, eventdata, handles)
@@ -2388,8 +2252,6 @@ function edit54_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
 
 function P1_Callback(hObject, eventdata, handles)
 % hObject    handle to P1 (see GCBO)
